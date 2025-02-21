@@ -95,55 +95,53 @@ def content_writing_task(state: ContentState) -> ContentState:
 Ensure the content flows smoothly, engages the reader, and maintains a clear, structured layout that is easy to scan. The tone should balance professionalism with friendliness, making it both informative and persuasive.  
 """,
 
-    "about_us_page": f"""You are an expert storyteller and professional content writer. Write a compelling **About Us Page** for {company_name}, a company specializing in {services}. The content should be **engaging, structured, and customer-focused**, closely resembling the example provided.
+"about_us_page": f"""You are an expert storyteller and professional content writer. Write a compelling **About Us Page** for **{company_name}**, a company specializing in **{services}**. The content should be **engaging, structured, and customer-focused**, closely resembling the example provided.  
+                ### **Key Requirements:**  
 
-                    ### **Key Requirements:**
-                    - **Headline & Introduction:**  
-                      - Start with a strong, attention-grabbing headline that establishes the company’s authority.  
-                      - Provide a warm and engaging introduction that highlights the company’s expertise, commitment to customer satisfaction, and high-quality service.  
-                    
-                    - **Company Overview:**  
-                      - Clearly define the company’s **mission, values, and dedication** to professionalism, reliability, and customer care.  
-                      - Emphasize industry experience, certifications, and partnerships with trusted brands.  
-                      - If applicable, include any notable statistics (e.g., years of experience, number of clients served, customer satisfaction ratings).  
-                    
-                    - **Services Overview:**
-                        there is the list of service  {services} so show one by one.
-                      - Present a structured list of key services, similar to how a **bullet-point format** is used in the example.  
-                      - Ensure descriptions are clear, informative, and compelling.
-                      - The services is pass dynamically insert {services} show the data only these service.
-                    
-                    - **Unique Selling Points & Customer Benefits:**  
-                      - Highlight what makes this company stand out (e.g., 24/7 emergency services, free consultations, long-term warranties, financing options).  
-                      - Explain how the company’s approach is **customer-first**, ensuring transparency, trust, and superior service.  
-                    
-                    - **Work Process Overview:**  
-                      - Provide a **step-by-step explanation** of the company’s service process for clarity and transparency.  
-                      - Ensure this section builds confidence in potential customers.  
-                    
-                    - **Call to Action:**  
-                      - Conclude with a strong, action-driven statement that encourages customers to **get in touch, request a quote, or book a consultation**.  
-                    
-                    - **SEO Optimization & Readability:**  
-                      - Ensure the content is **SEO-friendly**, with relevant keywords for better search rankings.  
-                      - Use concise paragraphs, bullet points where necessary, and persuasive language.  
-                    
-                    - **Universal Applicability:**  
-                      - Avoid references to specific locations unless explicitly required.  
-                      - Ensure the content is adaptable to various regions without needing modifications.  
-                    
-                    - **Use this research:** {research_data}  
-                    - **Apply these SEO best practices:** {seo_data}  
-                    ### **Content Example Structure:**
-                    - **About {company_name}** (Introduction)
-                    - **Our Mission & Values** (Commitment to quality, customer satisfaction, professionalism)
-                    - **Why Choose Us?** (Experience, certifications, reliability, customer perks)
-                    - **Our Services:** (Bullet list of key services like {services})
-                    - **Areas We Cover:** (Dynamically insert {service_area} to list locations served and shown only name in a bullet point)
-                    - **Contact Us** (Call to action)
-                    The content should be **professional yet personable**, building trust and encouraging potential customers to engage with the business.  
-                    """,
+                - **Headline & Introduction:**  
+                  - Start with a strong, attention-grabbing headline that establishes credibility.  
+                  - Craft a welcoming introduction that highlights the company’s expertise, dedication to customer satisfaction, and high-quality service.  
 
+                - **Company Overview:**  
+                  - Clearly define the company’s **mission, values, and commitment** to excellence.  
+                  - Emphasize industry experience, professional certifications, and partnerships with trusted brands.  
+                  - If applicable, include notable statistics (e.g., years of experience, number of clients served, customer ratings).  
+
+                - **Services Overview:**  
+                  - List and describe key services dynamically based on **{services}**.  
+                  - Ensure each service is well-structured, informative, and highlights its unique benefits.  
+
+                - **Why Choose Us?** (Unique Selling Points)  
+                  - Emphasize what sets the company apart (e.g., 24/7 availability, warranties, financing options).  
+                  - Reinforce a **customer-first approach**, focusing on transparency, trust, and superior service.  
+
+                - **How We Work (Process Overview):**  
+                  - Provide a **step-by-step breakdown** of the service process, ensuring clarity and transparency.  
+                  - This section should build confidence in potential customers.  
+
+                - **Areas We Serve:**  
+                  - Dynamically insert **{service_area}** as a bullet-point list, showing only location names (without additional text).  
+
+                - **Call to Action:**  
+                  - Conclude with a compelling **CTA** encouraging customers to **contact the company, request a quote, or book a consultation**.  
+
+                - **SEO Optimization & Readability:**  
+                  - Use **SEO-friendly** content with relevant keywords for better search visibility.  
+                  - Structure the text for easy readability, with short paragraphs and bullet points where needed.  
+
+                - **Use this research:** {research_data}  
+                - **Apply these SEO best practices:** {seo_data}  
+
+                ### **Page Structure:**  
+                1. **About {company_name}** (Introduction)  
+                2. **Our Mission & Values** (Commitment to quality, customer satisfaction, professionalism)  
+                3. **Why Choose Us?** (Experience, certifications, reliability, customer perks)  
+                4. **Our Services** (List dynamically from {services})  
+                5. **Areas We Cover** (List dynamically from {service_area})  
+                6. **Contact Us** (Call to Action)  
+
+                Ensure the content is **professional yet personable**, fostering trust and encouraging engagement.  
+                """,
 
    "service_page": f"""You are a professional content strategist and expert copywriter. Create a **dedicated service page** for {services} that is **engaging, structured, and customer-focused** while maintaining a professional yet approachable tone.
 
