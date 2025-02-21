@@ -8,6 +8,7 @@ class ContentRequest(BaseModel):
     idea: str
     company_name: str
     services: str
+    service_area: str
 
 # ✅ Response Model
 class ContentResponse(BaseModel):
@@ -18,7 +19,7 @@ class ContentResponse(BaseModel):
     quality_score: int
 @app.post("/generate-content/", response_model=ContentResponse)
 def generate_content_endpoint(request: ContentRequest):
-    content = generate_content(request.idea, request.company_name, request.services)
+    content = generate_content(request.idea, request.company_name, request.services,request.service_area)
     # ✅ Extract `.content` from AIMessage objects
     return ContentResponse(
         home_page=content["home_page"].content,

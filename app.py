@@ -9,6 +9,7 @@ st.title("Website Content Generator")
 company_name = st.text_input("Enter Company Name", "GreenTech Solar")
 services = st.text_area("Enter Services (comma-separated)", "Solar Panel Installation, Maintenance, Consultation")
 idea = st.text_area("Enter Business Idea", "Solar Energy Solutions")
+service_area = st.text_area("Enter Service Area (comma-separated)", "Exmouth , Newton Abbot, Teignmouth, Taunton")
 
 if st.button("Generate Content"):
     # Convert user input into JSON format
@@ -19,7 +20,7 @@ if st.button("Generate Content"):
     # }
 
     with st.spinner("Generating content... Please wait ⏳"):
-        content = generate_content(idea, company_name, services)
+        content = generate_content(idea, company_name, services, service_area)
     # Check for errors
     
     st.success("Content generated successfully!")

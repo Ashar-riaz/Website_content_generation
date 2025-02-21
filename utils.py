@@ -15,6 +15,7 @@ class ContentState(Dict):
     idea: str
     company_name: str
     services: str
+    service_area:str
     research_data: str
     seo_optimization: str
     home_page: str
@@ -47,73 +48,173 @@ def content_writing_task(state: ContentState) -> ContentState:
     research_data = state["research_data"]
     seo_data = state["seo_optimization"]
     services = ", ".join(state["services"])
+    service_area = ", ".join(state["service_area"])
+    company_name=state["company_name"]
     prompts = {
-    "home_page": f"""You are a professional web content writer. Write an engaging **Home Page** for a company specializing in {services}.
-    - Start with a compelling headline that highlights the company’s expertise and services.
-    - Introduce the business and its main offerings concisely.
-    - Provide a trustworthy and friendly tone, emphasizing expert service and customer satisfaction.
-    - Highlight key services such as {services} and any unique benefits (e.g., free annual servicing, warranties, financing options).
-    - Include a section about why customers should choose this company, emphasizing reliability, transparency, and professional service.
-    - Ensure the content is universally applicable, avoiding any references to specific cities, states, or countries.
-    - Use persuasive, SEO-friendly language that encourages customers to take action.
-    - Use this research: {research_data}
-    - Apply these SEO best practices: {seo_data}
-    """,
+"home_page": f"""You are a highly skilled web content writer specializing in creating persuasive, SEO-optimized website content. Your task is to write an engaging **Home Page** for a company named **{company_name}**, which provides **{services}**.  
 
-    "about_us_page": f"""You are an expert storyteller and professional content writer. Write a compelling **About Us Page** for a company specializing in {services}.
-    - Start with a warm and engaging introduction, emphasizing the company's commitment to customer satisfaction and high-quality service.
-    - Clearly outline the company’s **mission, values, and expertise**, focusing on professionalism, reliability, and trust.
-    - Highlight the company’s **experience, certifications, and industry credibility** (e.g., working with trusted brands, offering long-term warranties).
-    - If applicable, mention flexible payment or financing options to make services more accessible to customers.
-    - Explain the company’s **work process step by step**, ensuring transparency and ease of understanding for potential customers.
-    - Use a **reassuring and customer-focused tone**, emphasizing quality workmanship, safety, and customer satisfaction.
-    - Avoid specific location names to keep the content universally applicable.
-    - Ensure the content is **SEO-optimized**, informative, and encourages potential customers to trust and engage with the business.
-    - Use this research: {research_data}
-    - Apply these SEO best practices: {seo_data}
-    """,
+#### **Key Requirements:**  
+- **Headline & Subheadline:**  
+  - Craft a compelling headline that immediately conveys the company’s expertise and value proposition.  
+  - Use a concise subheadline to reinforce trust and credibility.  
 
-    "service_page":f"""You are a professional content strategist. Create a **dedicated service page** for {services}.
+- **Introduction:**  
+  - Write a powerful opening paragraph that clearly introduces the company, its specialization, and its core services.  
+  - Ensure the tone is professional yet approachable, instilling confidence in potential customers.  
 
-    - **Introduction:** Clearly introduce the service and its importance for customers.
-    - **What We Offer:** Explain what is included in this service, covering key features and benefits.
-    - **Why Choose Us:** Highlight expertise, quality assurance, warranties, or unique advantages of choosing this company.
-    - **Process:** Outline the step-by-step process of how this service is provided (e.g., consultation, installation, maintenance).
-    - **Customer Benefits:** Detail how customers will benefit from this service (e.g., cost savings, efficiency, reliability).
-    - **Call to Action (CTA):** Encourage customers to request a quote, book an appointment, or contact for more details.
-    - Ensure the content is **clear, persuasive, SEO-optimized, and engaging**.
-    - Do not mention specific locations so the content remains adaptable.
-    - Use this research: {research_data}
-    - Apply these SEO best practices: {seo_data}
-    """,
-   "individual_service_page": f"""You are a professional web content writer. Write a **dedicated service page** for the service: {services}. The content should be structured with a clear heading for each service and the related content underneath it. Ensure that the page is **informative, practical, and engaging** while maintaining a professional tone.
-    ### **Service: {services}**
-    there is the list of service  {services} so show one by one.
-    #### **Introduction**
-    Provide a brief, clear introduction to the service, explaining its purpose and value for the customer.
+- **Service Sections:**  
+  - Break down key services (**{services}**) into structured sections, detailing their benefits and unique selling points.  
+  - Highlight any special features, certifications, or guarantees that differentiate the company from competitors.  
 
-    #### **Service Details**
-    Describe what is included in this service, highlighting its key features and benefits.
+- **Trust & Experience:**  
+  - Showcase the company’s industry expertise, years of experience, and qualifications (e.g., certifications, accreditations).  
+  - Mention any professional affiliations that reinforce credibility.  
 
-    #### **Process**
-    Outline the step-by-step process of how this service is delivered, including any important details customers should know.
+- **Customer Benefits & Competitive Advantages:**  
+  - Emphasize why customers should choose this company over competitors.  
+  - Include unique selling points such as fast service, free consultations, financing options, warranties, or emergency availability.  
 
-    #### **Customer Benefits**
-    Explain how the customer will benefit from this service, whether through cost savings, enhanced efficiency, or improved reliability.
+- **Call to Action (CTA):**  
+  - Craft a strong CTA that encourages immediate action (e.g., "Book a Free Consultation Today!" or "Get Your Quote Now!").  
+  - Use persuasive, action-oriented language to drive conversions.  
 
-    #### **Why Choose Us?**
-    Provide practical reasons why customers should trust this company for this service, focusing on expertise, quality, and customer satisfaction.
+- **SEO Optimization:**  
+  - Naturally integrate relevant keywords for better search visibility.  
+  - Ensure readability, avoiding keyword stuffing.  
+  - Generate a compelling meta description to improve click-through rates.  
 
-    #### **Call to Action (CTA)**
-    Encourage customers to take action, such as requesting a quote, scheduling an appointment, or getting in touch for more details.
+- **Regional Adaptability:**  
+  - Keep the content adaptable by avoiding references to specific locations, unless specified.  
 
-    - Ensure the content is **clear, persuasive, SEO-optimized, and engaging**.
-    - Do not mention specific locations so the content remains adaptable for any service area.
-    - Keep the content **concise, natural, and SEO-friendly**—avoid overly promotional language.
-    - Use this research: {research_data}
-    - Apply these SEO best practices: {seo_data}
-    """
+- **Use This Research for Accuracy:**  
+  {research_data}  
 
+- **Apply These SEO Best Practices:**  
+  {seo_data}  
+
+Ensure the content flows smoothly, engages the reader, and maintains a clear, structured layout that is easy to scan. The tone should balance professionalism with friendliness, making it both informative and persuasive.  
+""",
+
+    "about_us_page": f"""You are an expert storyteller and professional content writer. Write a compelling **About Us Page** for {company_name}, a company specializing in {services}. The content should be **engaging, structured, and customer-focused**, closely resembling the example provided.
+
+                    ### **Key Requirements:**
+                    - **Headline & Introduction:**  
+                      - Start with a strong, attention-grabbing headline that establishes the company’s authority.  
+                      - Provide a warm and engaging introduction that highlights the company’s expertise, commitment to customer satisfaction, and high-quality service.  
+                    
+                    - **Company Overview:**  
+                      - Clearly define the company’s **mission, values, and dedication** to professionalism, reliability, and customer care.  
+                      - Emphasize industry experience, certifications, and partnerships with trusted brands.  
+                      - If applicable, include any notable statistics (e.g., years of experience, number of clients served, customer satisfaction ratings).  
+                    
+                    - **Services Overview:**
+                        there is the list of service  {services} so show one by one.
+                      - Present a structured list of key services, similar to how a **bullet-point format** is used in the example.  
+                      - Ensure descriptions are clear, informative, and compelling.
+                      - The services is pass dynamically insert {services} show the data only these service.
+                    
+                    - **Unique Selling Points & Customer Benefits:**  
+                      - Highlight what makes this company stand out (e.g., 24/7 emergency services, free consultations, long-term warranties, financing options).  
+                      - Explain how the company’s approach is **customer-first**, ensuring transparency, trust, and superior service.  
+                    
+                    - **Work Process Overview:**  
+                      - Provide a **step-by-step explanation** of the company’s service process for clarity and transparency.  
+                      - Ensure this section builds confidence in potential customers.  
+                    
+                    - **Call to Action:**  
+                      - Conclude with a strong, action-driven statement that encourages customers to **get in touch, request a quote, or book a consultation**.  
+                    
+                    - **SEO Optimization & Readability:**  
+                      - Ensure the content is **SEO-friendly**, with relevant keywords for better search rankings.  
+                      - Use concise paragraphs, bullet points where necessary, and persuasive language.  
+                    
+                    - **Universal Applicability:**  
+                      - Avoid references to specific locations unless explicitly required.  
+                      - Ensure the content is adaptable to various regions without needing modifications.  
+                    
+                    - **Use this research:** {research_data}  
+                    - **Apply these SEO best practices:** {seo_data}  
+                    ### **Content Example Structure:**
+                    - **About {company_name}** (Introduction)
+                    - **Our Mission & Values** (Commitment to quality, customer satisfaction, professionalism)
+                    - **Why Choose Us?** (Experience, certifications, reliability, customer perks)
+                    - **Our Services:** (Bullet list of key services like {services})
+                    - **Areas We Cover:** (Dynamically insert {service_area} to list locations served and shown only name in a bullet point)
+                    - **Contact Us** (Call to action)
+                    The content should be **professional yet personable**, building trust and encouraging potential customers to engage with the business.  
+                    """,
+
+
+   "service_page": f"""You are a professional content strategist and expert copywriter. Create a **dedicated service page** for {services} that is **engaging, structured, and customer-focused** while maintaining a professional yet approachable tone.
+
+### **Key Requirements:**
+
+- **Headline & Introduction:**  
+  - Start with a strong, compelling headline introducing the service.  
+  - Provide a **concise yet engaging introduction**, highlighting the importance of this service and how it benefits the customer.  
+
+- **Service Offerings:**  
+  - Break down the service into **clear, distinct sections**, similar to the example provided.  
+  - Use **subheadings** to introduce different aspects of the service, ensuring clarity and easy navigation.  
+  - Clearly explain **what is included**, covering key features and benefits.  
+
+- **Why Choose Us:**  
+  - Emphasize **expertise, experience, and unique advantages** (e.g., warranties, certifications, customer satisfaction).  
+  - Highlight **any exclusive benefits** such as fast response times, emergency support, or personalized service.  
+
+- **Process Overview:**  
+  - Provide a **step-by-step breakdown** of how this service is delivered.  
+  - Ensure the process is **easy to understand** and builds trust with potential customers.  
+
+- **Customer Benefits:**  
+  - Clearly outline **how customers will benefit** (e.g., cost savings, improved efficiency, long-term reliability).  
+  - Use a **reassuring tone** to emphasize professionalism, quality, and customer satisfaction.  
+
+- **Call to Action (CTA):**  
+  - Include a **strong, action-driven CTA** that encourages customers to take the next step (e.g., "Contact us today for a free consultation!" or "Book your service now and enjoy hassle-free heating").  
+
+- **SEO Optimization & Readability:**  
+  - Ensure content is **SEO-optimized**, with relevant keywords for better search rankings.  
+  - Use **concise paragraphs, bullet points, and subheadings** for easy reading.  
+
+- **Adaptability:**  
+  - Do not mention specific locations unless required, ensuring universal applicability.  
+
+- **Use this research:** {research_data}  
+- **Apply these SEO best practices:** {seo_data}  
+
+The content should be **engaging, structured, and persuasive**, designed to build trust and encourage customer engagement.  
+""",
+
+
+           "individual_service_page": f"""You are a professional web content writer. Write a **dedicated service page** for the service: {services}. The content should be structured with a clear heading for each service and the related content underneath it. Ensure that the page is **informative, practical, and engaging** while maintaining a professional tone.
+                                    ### **Service: {services}**
+                                    there is the list of service  {services} so show one by one.
+                                    #### **Introduction**
+                                    Provide a brief, clear introduction to the service, explaining its purpose and value for the customer.
+                                
+                                    #### **Service Details**
+                                    Describe what is included in this service, highlighting its key features and benefits.
+                                
+                                    #### **Process**
+                                    Outline the step-by-step process of how this service is delivered, including any important details customers should know.
+                                
+                                    #### **Customer Benefits**
+                                    Explain how the customer will benefit from this service, whether through cost savings, enhanced efficiency, or improved reliability.
+                                
+                                    #### **Why Choose Us?**
+                                    Provide practical reasons why customers should trust this company for this service, focusing on expertise, quality, and customer satisfaction.
+                                
+                                    #### **Call to Action (CTA)**
+                                    Encourage customers to take action, such as requesting a quote, scheduling an appointment, or getting in touch for more details.
+                                
+                                    - Ensure the content is **clear, persuasive, SEO-optimized, and engaging**.
+                                    - Do not mention specific locations so the content remains adaptable for any service area.
+                                    - Keep the content **concise, natural, and SEO-friendly**—avoid overly promotional language.
+                                    - Use this research: {research_data}
+                                    - Apply these SEO best practices: {seo_data}
+                                    """
+                        
 }
     pages = {key: llm.invoke(prompt) for key, prompt in prompts.items()}
     state.update(pages)
@@ -461,11 +562,12 @@ lambda state: "refine_content" if state["quality_score"] <= 7 else END,
 )
 content_graph = workflow.compile()
 
-def generate_content(idea: str, company_name: str, services: str) -> Dict:
+def generate_content(idea: str, company_name: str, services: str, service_area: str) -> Dict:
     state = content_graph.invoke({
         "idea": idea,
         "company_name": company_name,
         "services": services,
+        "service_area":service_area,
         "quality_score": 0
     })
     return state
