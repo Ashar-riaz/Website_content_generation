@@ -1,9 +1,10 @@
-from typing import Dict
+
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.tools import DuckDuckGoSearchRun
 import os
 from dotenv import load_dotenv
 from langgraph.graph import StateGraph, END
+from typing import Dict, List
 load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY")
@@ -14,14 +15,14 @@ search_tool = DuckDuckGoSearchRun(region="uk-en", safe="strict")
 class ContentState(Dict):
     idea: str
     company_name: str
-    services: str
-    service_area:str
+    services: Dict[str, List[str]]
+    service_area: str
     research_data: str
     seo_optimization: str
     home_page: str
     about_us_page: str
     service_page: str
-    individual_service_page: str
+    individual_service_pages: Dict[str, str]  # Multiple sub-service pages
     quality_score: int
 
 # ✅ Define Workflow
@@ -47,171 +48,233 @@ def seo_optimization_task(state: ContentState) -> ContentState:
 def content_writing_task(state: ContentState) -> ContentState:
     research_data = state["research_data"]
     seo_data = state["seo_optimization"]
-    services = ", ".join(state["services"])
-    service_area = ", ".join(state["service_area"])
+    # services = "\n".join(f"- {service}" for service in state["services"])
+    main_services = list(state["services"].keys())  # Extract main service names
+    main_services_str = "\n".join(f"- {service}" for service in main_services)  # Format for readability
+ 
+# Extract only subservices
+    services_list = [
+        subservice
+        for main_service, subservices in state["services"].items()
+        for subservice in subservices
+    ]
+
+# Convert to bullet points
+    services = "\n".join(f"- {sub}" for sub in services_list)
+
+ 
+    service_area = "\n".join(f"- {area}" for area in state["service_area"])
     company_name=state["company_name"]
     prompts = {
-"home_page": f"""You are a highly skilled web content writer specializing in creating persuasive, SEO-optimized website content. Your task is to write an engaging **Home Page** for a company named **{company_name}**, which provides **{services}**.  
+    "home_page": f"""You are an expert web content writer specializing in **SEO-optimized, high-converting website copy**. Your task is to write a compelling **Home Page** for a company named **{company_name}**, which provides **{services}**. Your writing should be persuasive, well-structured, and engaging while maintaining a clear, informative tone. 
 
-#### **Key Requirements:**  
-- **Headline & Subheadline:**  
-  - Craft a compelling headline that immediately conveys the company’s expertise and value proposition.  
-  - Use a concise subheadline to reinforce trust and credibility.  
+              ### **Key Requirements:**  
 
-- **Introduction:**  
-  - Write a powerful opening paragraph that clearly introduces the company, its specialization, and its core services.  
-  - Ensure the tone is professional yet approachable, instilling confidence in potential customers.  
+              #### **1. Engaging Headline & Subheadline:**  
+              - Create a powerful, attention-grabbing **headline** that highlights the company’s expertise and core offering.  
+              - Follow with a **subheadline** that builds trust and credibility while reinforcing key benefits.  
 
-- **Service Sections:**  
-  - Break down key services (**{services}**) into structured sections, detailing their benefits and unique selling points.  
-  - Highlight any special features, certifications, or guarantees that differentiate the company from competitors.  
+              #### **2. Strong Introduction (First 2-3 Sentences Must Hook the Reader):**  
+              - Clearly introduce the company, its specialization, and the core services.  
+              - Ensure the tone is professional yet friendly to build trust and engagement.  
 
-- **Trust & Experience:**  
-  - Showcase the company’s industry expertise, years of experience, and qualifications (e.g., certifications, accreditations).  
-  - Mention any professional affiliations that reinforce credibility.  
+              #### **3. Service Sections (Well-Structured & Persuasive):**  
+              - **Break down key services** (**{services}**) into well-defined sections.  
+              - Explain the benefits of each service using a persuasive yet informative style.  
+              - Highlight **unique selling points** (e.g., fast installation, expert engineers, same-day service).  
+              - If applicable, mention warranties, certifications, and brand affiliations.  
+              - Service show in a paragraph. The heading should be the service name and then the paragraph should be the service description.
 
-- **Customer Benefits & Competitive Advantages:**  
-  - Emphasize why customers should choose this company over competitors.  
-  - Include unique selling points such as fast service, free consultations, financing options, warranties, or emergency availability.  
+              #### **4. Trust & Experience (Builds Authority):**  
+              - Showcase the company’s years of experience, qualifications, and certifications.  
+              - Mention **Gas Safe registration**, City and Guilds qualifications, or any other relevant credentials.  
 
-- **Call to Action (CTA):**  
-  - Craft a strong CTA that encourages immediate action (e.g., "Book a Free Consultation Today!" or "Get Your Quote Now!").  
-  - Use persuasive, action-oriented language to drive conversions.  
+              #### **5. Customer Benefits & Competitive Advantages:**  
+              - Clearly **differentiate** this company from competitors.  
+              - Emphasize **why customers should choose this business** (e.g., fast service, 7-day availability, great warranties).  
+              - Mention any **freebies or added-value services** (e.g., “Free Smart Thermostat with Every Boiler Installation”).  
+              
+              #### **6. **Why Choose Us?** (Unique Selling Points)
+              - Emphasize what sets the company apart (e.g., 24/7 availability, warranties, financing options and add other which give plus).  
+              - Reinforce a **customer-first approach**, focusing on transparency, trust, and superior service.  
 
-- **SEO Optimization:**  
-  - Naturally integrate relevant keywords for better search visibility.  
-  - Ensure readability, avoiding keyword stuffing.  
-  - Generate a compelling meta description to improve click-through rates.  
+              #### **7. Call to Action (Drives Conversions):**  
+              - End with a **strong, action-oriented CTA**, such as:  
+                - “Get a Free Quote Today – Call Now!”  
+                - “Book Your Boiler Installation in Just 24 Hours!”  
+              - Encourage urgency and easy next steps.  
 
-- **Regional Adaptability:**  
-  - Keep the content adaptable by avoiding references to specific locations, unless specified.  
+              #### **8. SEO Optimization (Ensures Visibility):**  
+              - Naturally integrate **high-ranking keywords** without keyword stuffing.  
+              - Ensure content is structured for **readability and engagement**.  
+              - Generate a **compelling meta description** (160 characters max) that improves search engine click-through rates.  
 
-- **Use This Research for Accuracy:**  
-  {research_data}  
+              #### **9. Local Relevance (If Applicable):**  
+              - Ensure the content is adaptable to any location unless specified.  
+              - If a location is provided, highlight **local expertise** and availability.  
 
-- **Apply These SEO Best Practices:**  
-  {seo_data}  
+              **Use the following research data for accuracy:**  
+              {research_data}  
 
-Ensure the content flows smoothly, engages the reader, and maintains a clear, structured layout that is easy to scan. The tone should balance professionalism with friendliness, making it both informative and persuasive.  
-""",
+              **Apply these SEO best practices:**  
+              {seo_data}  
 
-"about_us_page": f"""You are an expert storyteller and professional content writer. Write a compelling **About Us Page** for **{company_name}**, a company specializing in **{services}**. The content should be **engaging, structured, and customer-focused**, closely resembling the example provided.  
-                ### **Key Requirements:**  
+              Ensure the content is persuasive, engaging, and easy to read. Keep paragraphs short and **use bullet points for clarity when needed**. Your writing should feel **professional yet approachable**, with a strong focus on **conversion and engagement**.  
+              """,
+"about_us_page": f"""You are an expert web content writer skilled in crafting **engaging, structured, and customer-focused About Us pages**.  
+              Write a professional and compelling **About Us** page for **{company_name}**, a trusted provider of **{services}**. The content must be well-structured, engaging, and clearly communicate the company’s mission, services, and coverage areas.  
 
-                - **Headline & Introduction:**  
-                  - Start with a strong, attention-grabbing headline that establishes credibility.  
-                  - Craft a welcoming introduction that highlights the company’s expertise, dedication to customer satisfaction, and high-quality service.  
+              ### **Key Requirements:**  
 
-                - **Company Overview:**  
-                  - Clearly define the company’s **mission, values, and commitment** to excellence.  
-                  - Emphasize industry experience, professional certifications, and partnerships with trusted brands.  
-                  - If applicable, include notable statistics (e.g., years of experience, number of clients served, customer ratings).  
+              #### **1. Introduction (Who We Are & What We Do)**  
+              - Start with a strong, engaging introduction that:  
+                - Establishes expertise and credibility.  
+                - Mentions **years of experience, location, and key services**.  
+                - Highlights the company’s commitment to **quality, customer satisfaction, and professional service**. 
+                - Give in a detailed information about the company. 
 
-                - **Services Overview:**  
-                  - List and describe key services dynamically based on **{services}**.  
-                  - Ensure each service is well-structured, informative, and highlights its unique benefits.  
+              #### **2. Our Mission & Values**  
+              - Describe the company’s **core values and commitment**:  
+                - Integrity, professionalism, and high-quality service.  
+                - Dedication to customer-first service and long-term client relationships.   
 
-                - **Why Choose Us?** (Unique Selling Points)  
-                  - Emphasize what sets the company apart (e.g., 24/7 availability, warranties, financing options).  
-                  - Reinforce a **customer-first approach**, focusing on transparency, trust, and superior service.  
+              #### **3. Service Overview (With Subservices in Bullet Points)**  
+              - Display only **the services exactly as provided in `{services}`**, without modifying or adding extra services.  
+              - Ensure subservices **stay in their original format** without splitting words.  
+              - Example structure:  
 
-                - **How We Work (Process Overview):**  
-                  - Provide a **step-by-step breakdown** of the service process, ensuring clarity and transparency.  
-                  - This section should build confidence in potential customers.  
+              {services}
+              #### **4. Areas We Serve (Exact Format & Integrity Preserved)**  
+              - Display only **the locations exactly as provided in `{service_area}`**.  
+              - Ensure locations with **multiple words remain intact** (e.g., "Newton Abbot" will not split).  
+              - Display in a **clean bullet-point list**.  
 
-                - **Areas We Serve:**  
-                  - Dynamically insert **{service_area}** as a bullet-point list, showing only location names (without additional text).  
+              {service_area}
 
-                - **Call to Action:**  
-                  - Conclude with a compelling **CTA** encouraging customers to **contact the company, request a quote, or book a consultation**.  
+              #### **5. Call to Action (Encouraging Customer Engagement)**  
+              - End with a **clear and compelling CTA**, such as:  
+              - **"For expert services in {service_area}, contact us today!"**  
+              - **"Get in touch to schedule your consultation."**  
 
-                - **SEO Optimization & Readability:**  
-                  - Use **SEO-friendly** content with relevant keywords for better search visibility.  
-                  - Structure the text for easy readability, with short paragraphs and bullet points where needed.  
+              ### **Page Structure:**  
+              1. **About {company_name}** (Introduction)  
+              2. **Our Mission & Values** (Commitment to quality and customer satisfaction)  
+              3. **Our Services** (List services dynamically from `{services}`)  
+              4. **Areas We Cover** (List locations dynamically from `{service_area}`)  
+              5. **Contact Us** (Call to Action)  
 
-                - **Use this research:** {research_data}  
-                - **Apply these SEO best practices:** {seo_data}  
+              Ensure the content is **concise, well-structured, and SEO-friendly**, using **bullet points** for readability and **natural keyword integration** for better search rankings.  
+              """,
 
-                ### **Page Structure:**  
-                1. **About {company_name}** (Introduction)  
-                2. **Our Mission & Values** (Commitment to quality, customer satisfaction, professionalism)  
-                3. **Why Choose Us?** (Experience, certifications, reliability, customer perks)  
-                4. **Our Services** (List dynamically from {services})  
-                5. **Areas We Cover** (List dynamically from {service_area})  
-                6. **Contact Us** (Call to Action)  
+  "service_page": f"""You are a professional web content strategist and expert copywriter.  
+              Create a **well-structured, engaging, and customer-focused service page** for {company_name}.  
+              Ensure that **each main service has its own heading**, with **detailed descriptions of all corresponding subservices** underneath in a structured format.
+              
+              ---
+              
+              ### **Key Requirements:**  
+              
+              #### **1. Headline & Introduction**  
+              - Start with a **strong, engaging headline** introducing the main service category.  
+              - Provide a **concise yet compelling introduction**, highlighting why this service is important and how it benefits customers.  
+              
+              #### **2. Service Breakdown (Main Services & Corresponding Subservices)**  
+              - Each **main service** from `{main_services_str}` should be displayed as a heading:  
+                - **Format:** `## Main Service Name`  
+              - Each **subservice** from `{services}` should be listed under the correct **main service**:  
+                - **Format:** `### Subservice Name`  
+                - **Followed by a short description** explaining its benefits.  
+              - **Maintain the exact structure of main and subservices as provided.**  
+              
+              #### **Example Format:**  
+              
+              ## **Main service**  
+              At {company_name}, we provide expert solar panel installation services designed to maximize energy efficiency and savings. Our goal is to make solar energy accessible and affordable, ensuring that your home or business benefits from clean and sustainable power.
+              
+              ### **subservice1**  
+              Our professional team installs high-quality solar panels that are tailored to your property's needs. We assess your location, energy consumption, and budget to create an optimal solar solution that maximizes savings and efficiency.
+              
+              ### **subservice2**  
+              We provide comprehensive maintenance services to keep your solar system operating at peak performance. This includes panel inspections, cleaning, and system diagnostics to ensure longevity and efficiency.
+              
+              ### **subservice3**  
+              If your solar panels or inverters develop faults, our skilled technicians offer prompt repair services to restore functionality. Whether it's wiring issues, faulty components, or system inefficiencies, we quickly diagnose and fix the problem.
+              
+              ### **subservice4**  
+              Our solar consultation services include expert advice on the best solar solutions for your property. We conduct site evaluations, financial analysis, and system design planning to ensure that your investment yields the best results.
+              
+              and more if there are additional subservices...
+              
+              ---
+              
+              ## **Main service**  
+              Proper wiring ensures your solar power system functions safely and efficiently. At {company_name}, we provide expert electrical wiring services to guarantee seamless energy distribution from your solar panels to your home or business.
+              
+              ### **subservice1**  
+              We offer fixed wiring solutions that enhance the stability and reliability of your solar energy system. Our professional installations ensure compliance with safety standards and optimal electrical performance.
+              
+              ### **subservice2**  
+              If your current electrical wiring is outdated or inadequate for your solar energy needs, we provide new wiring solutions that optimize energy flow and improve overall system efficiency.
+              
+              and more if there are additional subservices...
+              
+              ---
+              and more if there are additional service...
+              
+              #### **3. Service Process Overview**  
+              - Provide a **clear, step-by-step breakdown** of how the service is delivered.  
+              - Keep it **simple, engaging, and informative**.  
+              
+              #### **4. Call to Action (CTA)**  
+              - End with a **strong, persuasive CTA**, such as:  
+                - **"Contact us today for a free consultation!"**  
+                - **"Book your service now and enjoy hassle-free solar solutions."**  
+              
+              #### **5. SEO Optimization & Readability**  
+              - Ensure content is **SEO-optimized** for better search rankings.  
+              - Use **concise paragraphs, bullet points, and subheadings** for easy reading.  
+              
+              #### **6. Adaptability**  
+              - **Do not mention specific locations unless required.**  
+              
+              - **Use this research:** {research_data}  
+              - **Apply these SEO best practices:** {seo_data}  
+              
+              The content must be **engaging, structured, and persuasive**, ensuring customers can easily navigate and understand your services.  
+              
+              ---
+              
+              """,
+              
 
-                Ensure the content is **professional yet personable**, fostering trust and encouraging engagement.  
-                """,
 
-   "service_page": f"""You are a professional content strategist and expert copywriter. Create a **dedicated service page** for {services} that is **engaging, structured, and customer-focused** while maintaining a professional yet approachable tone.
-
-### **Key Requirements:**
-
-- **Headline & Introduction:**  
-  - Start with a strong, compelling headline introducing the service.  
-  - Provide a **concise yet engaging introduction**, highlighting the importance of this service and how it benefits the customer.  
-
-- **Service Offerings:**  
-  - Break down the service into **clear, distinct sections**, similar to the example provided.  
-  - Use **subheadings** to introduce different aspects of the service, ensuring clarity and easy navigation.  
-  - Clearly explain **what is included**, covering key features and benefits.  
-
-- **Why Choose Us:**  
-  - Emphasize **expertise, experience, and unique advantages** (e.g., warranties, certifications, customer satisfaction).  
-  - Highlight **any exclusive benefits** such as fast response times, emergency support, or personalized service.  
-
-- **Process Overview:**  
-  - Provide a **step-by-step breakdown** of how this service is delivered.  
-  - Ensure the process is **easy to understand** and builds trust with potential customers.  
-
-- **Customer Benefits:**  
-  - Clearly outline **how customers will benefit** (e.g., cost savings, improved efficiency, long-term reliability).  
-  - Use a **reassuring tone** to emphasize professionalism, quality, and customer satisfaction.  
-
-- **Call to Action (CTA):**  
-  - Include a **strong, action-driven CTA** that encourages customers to take the next step (e.g., "Contact us today for a free consultation!" or "Book your service now and enjoy hassle-free heating").  
-
-- **SEO Optimization & Readability:**  
-  - Ensure content is **SEO-optimized**, with relevant keywords for better search rankings.  
-  - Use **concise paragraphs, bullet points, and subheadings** for easy reading.  
-
-- **Adaptability:**  
-  - Do not mention specific locations unless required, ensuring universal applicability.  
-
-- **Use this research:** {research_data}  
-- **Apply these SEO best practices:** {seo_data}  
-
-The content should be **engaging, structured, and persuasive**, designed to build trust and encourage customer engagement.  
-""",
-
-
-           "individual_service_page": f"""You are a professional web content writer. Write a **dedicated service page** for the service: {services}. The content should be structured with a clear heading for each service and the related content underneath it. Ensure that the page is **informative, practical, and engaging** while maintaining a professional tone.
-                                    ### **Service: {services}**
-                                    there is the list of service  {services} so show one by one.
-                                    #### **Introduction**
-                                    Provide a brief, clear introduction to the service, explaining its purpose and value for the customer.
+          #  "individual_service_page": f"""You are a professional web content writer. Write a **dedicated service page** for the service: {services}. The content should be structured with a clear heading for each service and the related content underneath it. Ensure that the page is **informative, practical, and engaging** while maintaining a professional tone.
+          #                           ### **Service: {services}**
+          #                           there is the list of service  {services} so show one by one.
+          #                           #### **Introduction**
+          #                           Provide a brief, clear introduction to the service, explaining its purpose and value for the customer.
                                 
-                                    #### **Service Details**
-                                    Describe what is included in this service, highlighting its key features and benefits.
+          #                           #### **Service Details**
+          #                           Describe what is included in this service, highlighting its key features and benefits.
                                 
-                                    #### **Process**
-                                    Outline the step-by-step process of how this service is delivered, including any important details customers should know.
+          #                           #### **Process**
+          #                           Outline the step-by-step process of how this service is delivered, including any important details customers should know.
                                 
-                                    #### **Customer Benefits**
-                                    Explain how the customer will benefit from this service, whether through cost savings, enhanced efficiency, or improved reliability.
+          #                           #### **Customer Benefits**
+          #                           Explain how the customer will benefit from this service, whether through cost savings, enhanced efficiency, or improved reliability.
                                 
-                                    #### **Why Choose Us?**
-                                    Provide practical reasons why customers should trust this company for this service, focusing on expertise, quality, and customer satisfaction.
+          #                           #### **Why Choose Us?**
+          #                           Provide practical reasons why customers should trust this company for this service, focusing on expertise, quality, and customer satisfaction.
                                 
-                                    #### **Call to Action (CTA)**
-                                    Encourage customers to take action, such as requesting a quote, scheduling an appointment, or getting in touch for more details.
+          #                           #### **Call to Action (CTA)**
+          #                           Encourage customers to take action, such as requesting a quote, scheduling an appointment, or getting in touch for more details.
                                 
-                                    - Ensure the content is **clear, persuasive, SEO-optimized, and engaging**.
-                                    - Do not mention specific locations so the content remains adaptable for any service area.
-                                    - Keep the content **concise, natural, and SEO-friendly**—avoid overly promotional language.
-                                    - Use this research: {research_data}
-                                    - Apply these SEO best practices: {seo_data}
-                                    """
+          #                           - Ensure the content is **clear, persuasive, SEO-optimized, and engaging**.
+          #                           - Do not mention specific locations so the content remains adaptable for any service area.
+          #                           - Keep the content **concise, natural, and SEO-friendly**—avoid overly promotional language.
+          #                           - Use this research: {research_data}
+          #                           - Apply these SEO best practices: {seo_data}
+          #                           """
                         
 }
     pages = {key: llm.invoke(prompt) for key, prompt in prompts.items()}
@@ -424,55 +487,55 @@ def refine_content(state: ContentState) -> ContentState:
          Provide the refined content in a **well-formatted and professional** manner.
          """,
         
-        "refine_individual_service_page" : f""" You are an expert at generating professional, structured, and SEO-optimized service pages for a business website.
+    #     "refine_individual_service_page" : f""" You are an expert at generating professional, structured, and SEO-optimized service pages for a business website.
 
-         Please **rewrite and refine** the following individual service page content using the exact format of the examples provided below.
-         Your response **must strictly follow the same structure, tone, and clarity** as the examples.
-          ### **Service: {services}**
-          there is the list of service  {services} so show one by one.
-         **Instructions:**
-         - Maintain the **exact headings, formatting, and structure** used in the examples.
-         - Ensure **clarity and professionalism** in the content.
-         - Use **engaging and SEO-friendly language**.
-         - Structure the content with **clear headings, subheadings, and sections**.
-         - Adapt the text while keeping it **relevant to the service and location**.
+    #      Please **rewrite and refine** the following individual service page content using the exact format of the examples provided below.
+    #      Your response **must strictly follow the same structure, tone, and clarity** as the examples.
+    #       ### **Service: {services}**
+    #       there is the list of service  {services} so show one by one.
+    #      **Instructions:**
+    #      - Maintain the **exact headings, formatting, and structure** used in the examples.
+    #      - Ensure **clarity and professionalism** in the content.
+    #      - Use **engaging and SEO-friendly language**.
+    #      - Structure the content with **clear headings, subheadings, and sections**.
+    #      - Adapt the text while keeping it **relevant to the service and location**.
 
-         **Example Format of a Well-Structured Service Page:**
-         ```
-         SERVICE AREAS PAGES
-         Exeter
+    #      **Example Format of a Well-Structured Service Page:**
+    #      ```
+    #      SERVICE AREAS PAGES
+    #      Exeter
 
-         Heating Services for Exeter
+    #      Heating Services for Exeter
 
-         Whether you need a new boiler, central heating installation, power flushing service, or boiler repair, our Gas Safe engineers are here to ensure your home stays warm and comfortable. South Coast Plumbing and Heating covers Exeter and provides a complete range of services for Natural Gas and oil boilers.
+    #      Whether you need a new boiler, central heating installation, power flushing service, or boiler repair, our Gas Safe engineers are here to ensure your home stays warm and comfortable. South Coast Plumbing and Heating covers Exeter and provides a complete range of services for Natural Gas and oil boilers.
 
-         New Boilers Installed in Exeter
-         Are you looking to upgrade to a new, energy-efficient boiler in Exeter? We supply and install A-rated gas and oil boilers from leading manufacturers. Our experienced gas heating engineers can help you choose the right replacement boiler for your home. Get an online quote from us for a new boiler that delivers optimum efficiency and reduces your energy bills.
+    #      New Boilers Installed in Exeter
+    #      Are you looking to upgrade to a new, energy-efficient boiler in Exeter? We supply and install A-rated gas and oil boilers from leading manufacturers. Our experienced gas heating engineers can help you choose the right replacement boiler for your home. Get an online quote from us for a new boiler that delivers optimum efficiency and reduces your energy bills.
 
-         We Service Gas and Oil Boilers in Exeter
-         Regular maintenance is key to ensuring your boiler works safely and efficiently all year round. Our team offers annual boiler servicing for homes across Exeter. During the boiler service, we perform a full inspection, identifying any potential issues before they become costly repairs. Keeping your boiler in top condition can also help to extend its lifespan and maintain your warranty.
+    #      We Service Gas and Oil Boilers in Exeter
+    #      Regular maintenance is key to ensuring your boiler works safely and efficiently all year round. Our team offers annual boiler servicing for homes across Exeter. During the boiler service, we perform a full inspection, identifying any potential issues before they become costly repairs. Keeping your boiler in top condition can also help to extend its lifespan and maintain your warranty.
 
-         Boilers Fixed Professionally in Exeter
-         If your boiler breaks down, you don’t want to be left without heating or hot water for long. We offer fast and reliable boiler repairs throughout Exeter. Our team of Gas Safe engineers is fully equipped to diagnose and fix common boiler issues, such as leaks, no hot water, and non-firing systems. If you’re experiencing boiler problems, contact us for a quick, professional repair service.
+    #      Boilers Fixed Professionally in Exeter
+    #      If your boiler breaks down, you don’t want to be left without heating or hot water for long. We offer fast and reliable boiler repairs throughout Exeter. Our team of Gas Safe engineers is fully equipped to diagnose and fix common boiler issues, such as leaks, no hot water, and non-firing systems. If you’re experiencing boiler problems, contact us for a quick, professional repair service.
 
-         Air Source Heat Pumps
-         Ask our team to give you a quote for a new air source heat pump in Exeter. Renewable energy products are the next generation in heating technology, so ask us about installing it in your home. We are your local renewable energy experts, available to install the best heat pump system to suit your home in Exeter.
+    #      Air Source Heat Pumps
+    #      Ask our team to give you a quote for a new air source heat pump in Exeter. Renewable energy products are the next generation in heating technology, so ask us about installing it in your home. We are your local renewable energy experts, available to install the best heat pump system to suit your home in Exeter.
 
-         All Plumbing for Exeter
-         When you need a reliable plumber in Exeter, our team is here to help. We handle all types of plumbing projects, including general plumbing and emergency plumbing. You can count on us for prompt and professional service every time. For new kitchen or bathroom plumbing and 24-hour plumbers, our Exeter plumbers have you covered.
+    #      All Plumbing for Exeter
+    #      When you need a reliable plumber in Exeter, our team is here to help. We handle all types of plumbing projects, including general plumbing and emergency plumbing. You can count on us for prompt and professional service every time. For new kitchen or bathroom plumbing and 24-hour plumbers, our Exeter plumbers have you covered.
 
-         Commercial Boilers & Plumbing Exeter
-         If you need a commercial plumber or heating engineer for your Exeter business, then South Coast Plumbing and Heating is the best team to contact. We install and maintain commercial boilers and hot water systems in Exeter. We also cover commercial plumbing projects.
-         ```
+    #      Commercial Boilers & Plumbing Exeter
+    #      If you need a commercial plumber or heating engineer for your Exeter business, then South Coast Plumbing and Heating is the best team to contact. We install and maintain commercial boilers and hot water systems in Exeter. We also cover commercial plumbing projects.
+    #      ```
 
-        **Now, rewrite the following service page content to match the format above, strictly follow:**
+    #     **Now, rewrite the following service page content to match the format above, strictly follow:**
 
-        ```
-        {state["individual_service_page"].content}
-        ```
+    #     ```
+    #     {state["individual_service_page"].content}
+    #     ```
 
-        **Your response must follow the example structure exactly.**
-    """
+    #     **Your response must follow the example structure exactly.**
+    # """
     }
     pages = {key: llm.invoke(prompt) for key, prompt in prompts.items()}
     state.update(pages)
@@ -515,7 +578,7 @@ def evaluate_content_quality(state: ContentState) -> ContentState:
     {state["home_page"].content}
     {state["about_us_page"].content}
     {state["service_page"].content}
-    {state["individual_service_page"].content}
+  
     ```
 
     **Strictly return ONLY this format:**
@@ -552,20 +615,35 @@ workflow.add_edge("seo_step", "writing_step")
 workflow.add_edge("writing_step", "refine_content")
 workflow.add_conditional_edges(
 "evaluate_content_quality",
-lambda state: "refine_content" if state["quality_score"] <= 7 else END,
+lambda state: "refine_content" if state["quality_score"] <= 1 else END,
 {
     "refine_content": "refine_content",
     END: END
 }
 )
 content_graph = workflow.compile()
-
-def generate_content(idea: str, company_name: str, services: str, service_area: str) -> Dict:
+def generate_content(idea: str, company_name: str, services: Dict[str, List[str]], service_area: str) -> Dict:
     state = content_graph.invoke({
         "idea": idea,
         "company_name": company_name,
         "services": services,
-        "service_area":service_area,
+        "service_area": service_area,
         "quality_score": 0
     })
+
+    # Generate content for sub-services
+    individual_service_pages = {}
+    for service, sub_services in services.items():
+        for sub_service in sub_services:
+            sub_service_state = content_graph.invoke({
+                "idea": f"{sub_service} under {service}",
+                "company_name": company_name,
+                "services": {service: [sub_service]},
+                "service_area": service_area,
+                "quality_score": 0
+            })
+            individual_service_pages[sub_service] = sub_service_state["service_page"]
+
+    state["individual_service_pages"] = individual_service_pages
+
     return state
