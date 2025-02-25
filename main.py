@@ -27,6 +27,6 @@ def generate_content_endpoint(request: ContentRequest):
         home_page=content["home_page"].content,
         about_us_page=content["about_us_page"].content,
         service_page=content["service_page"].content,
-        # individual_service_pages={key: val.content for key, val in content["individual_service_pages"].items()},
+        individual_service_pages={key: val.content for key, val in content["individual_service_pages"].items()},
         quality_score=content["quality_score"]
     )

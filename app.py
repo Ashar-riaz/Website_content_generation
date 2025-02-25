@@ -59,7 +59,7 @@ if st.button("Generate Content"):
     st.subheader("Service Page")
     st.markdown(content["service_page"].content)
 
-    # st.subheader("Individual Service Pages")
-    # for sub_service, text in content["individual_service_pages"].items():
-    #     st.markdown(f"### {sub_service}")
-    #     st.markdown(text)
+    st.subheader("Individual Service Pages")
+    for sub_service, text in content["individual_service_pages"].items():
+        st.markdown(f"### {sub_service}")
+        st.markdown(text)

@@ -166,115 +166,129 @@ def content_writing_task(state: ContentState) -> ContentState:
               Ensure the content is **concise, well-structured, and SEO-friendly**, using **bullet points** for readability and **natural keyword integration** for better search rankings.  
               """,
 
-  "service_page": f"""You are a professional web content strategist and expert copywriter.  
-              Create a **well-structured, engaging, and customer-focused service page** for {company_name}.  
-              Ensure that **each main service has its own heading**, with **detailed descriptions of all corresponding subservices** underneath in a structured format.
-              
-              ---
-              
-              ### **Key Requirements:**  
-              
-              #### **1. Headline & Introduction**  
-              - Start with a **strong, engaging headline** introducing the main service category.  
-              - Provide a **concise yet compelling introduction**, highlighting why this service is important and how it benefits customers.  
-              
-              #### **2. Service Breakdown (Main Services & Corresponding Subservices)**  
-              - Each **main service** from `{main_services_str}` should be displayed as a heading:  
-                - **Format:** `## Main Service Name`  
-              - Each **subservice** from `{services}` should be listed under the correct **main service**:  
-                - **Format:** `### Subservice Name`  
-                - **Followed by a short description** explaining its benefits.  
-              - **Maintain the exact structure of main and subservices as provided.**  
-              
-              #### **Example Format:**  
-              
-              ## **Main service**  
-              At {company_name}, we provide expert solar panel installation services designed to maximize energy efficiency and savings. Our goal is to make solar energy accessible and affordable, ensuring that your home or business benefits from clean and sustainable power.
-              
-              ### **subservice1**  
-              Our professional team installs high-quality solar panels that are tailored to your property's needs. We assess your location, energy consumption, and budget to create an optimal solar solution that maximizes savings and efficiency.
-              
-              ### **subservice2**  
-              We provide comprehensive maintenance services to keep your solar system operating at peak performance. This includes panel inspections, cleaning, and system diagnostics to ensure longevity and efficiency.
-              
-              ### **subservice3**  
-              If your solar panels or inverters develop faults, our skilled technicians offer prompt repair services to restore functionality. Whether it's wiring issues, faulty components, or system inefficiencies, we quickly diagnose and fix the problem.
-              
-              ### **subservice4**  
-              Our solar consultation services include expert advice on the best solar solutions for your property. We conduct site evaluations, financial analysis, and system design planning to ensure that your investment yields the best results.
-              
-              and more if there are additional subservices...
-              
-              ---
-              
-              ## **Main service**  
-              Proper wiring ensures your solar power system functions safely and efficiently. At {company_name}, we provide expert electrical wiring services to guarantee seamless energy distribution from your solar panels to your home or business.
-              
-              ### **subservice1**  
-              We offer fixed wiring solutions that enhance the stability and reliability of your solar energy system. Our professional installations ensure compliance with safety standards and optimal electrical performance.
-              
-              ### **subservice2**  
-              If your current electrical wiring is outdated or inadequate for your solar energy needs, we provide new wiring solutions that optimize energy flow and improve overall system efficiency.
-              
-              and more if there are additional subservices...
-              
-              ---
-              and more if there are additional service...
-              
-              #### **3. Service Process Overview**  
-              - Provide a **clear, step-by-step breakdown** of how the service is delivered.  
-              - Keep it **simple, engaging, and informative**.  
-              
-              #### **4. Call to Action (CTA)**  
-              - End with a **strong, persuasive CTA**, such as:  
-                - **"Contact us today for a free consultation!"**  
-                - **"Book your service now and enjoy hassle-free solar solutions."**  
-              
-              #### **5. SEO Optimization & Readability**  
-              - Ensure content is **SEO-optimized** for better search rankings.  
-              - Use **concise paragraphs, bullet points, and subheadings** for easy reading.  
-              
-              #### **6. Adaptability**  
-              - **Do not mention specific locations unless required.**  
-              
-              - **Use this research:** {research_data}  
-              - **Apply these SEO best practices:** {seo_data}  
-              
-              The content must be **engaging, structured, and persuasive**, ensuring customers can easily navigate and understand your services.  
-              
-              ---
-              
-              """,
-              
+"service_page": f"""You are a professional web content strategist and expert copywriter.
+                Create a **well-structured, engaging, and customer-focused service page** for {company_name}.
+                Ensure that **each main service has its own heading**, with **detailed descriptions of all corresponding subservices** underneath in a structured format.
 
+                ---
 
-          #  "individual_service_page": f"""You are a professional web content writer. Write a **dedicated service page** for the service: {services}. The content should be structured with a clear heading for each service and the related content underneath it. Ensure that the page is **informative, practical, and engaging** while maintaining a professional tone.
-          #                           ### **Service: {services}**
-          #                           there is the list of service  {services} so show one by one.
-          #                           #### **Introduction**
-          #                           Provide a brief, clear introduction to the service, explaining its purpose and value for the customer.
-                                
-          #                           #### **Service Details**
-          #                           Describe what is included in this service, highlighting its key features and benefits.
-                                
-          #                           #### **Process**
-          #                           Outline the step-by-step process of how this service is delivered, including any important details customers should know.
-                                
-          #                           #### **Customer Benefits**
-          #                           Explain how the customer will benefit from this service, whether through cost savings, enhanced efficiency, or improved reliability.
-                                
-          #                           #### **Why Choose Us?**
-          #                           Provide practical reasons why customers should trust this company for this service, focusing on expertise, quality, and customer satisfaction.
-                                
-          #                           #### **Call to Action (CTA)**
-          #                           Encourage customers to take action, such as requesting a quote, scheduling an appointment, or getting in touch for more details.
-                                
-          #                           - Ensure the content is **clear, persuasive, SEO-optimized, and engaging**.
-          #                           - Do not mention specific locations so the content remains adaptable for any service area.
-          #                           - Keep the content **concise, natural, and SEO-friendly**—avoid overly promotional language.
-          #                           - Use this research: {research_data}
-          #                           - Apply these SEO best practices: {seo_data}
-          #                           """
+                ### **Key Requirements:**
+
+                #### **1. Headline & Introduction**
+                - Start with a **strong, engaging headline** introducing the main service category.
+                - Provide a **concise yet compelling introduction**, highlighting why this service is important and how it benefits customers.
+
+                #### **2. Service Breakdown (Main Services & Corresponding Subservices)**
+                - Each **main service** from `{main_services_str}` should be displayed as a heading add a (Page):
+                  - **Format:** `## Main Service Name`
+                - Each **subservice** from `{services}` should be listed under the correct **main service**:
+                  - **Format:** `### Subservice Name`
+                  - **Followed by a short description** explaining its benefits.
+                - **Maintain the exact structure of main and subservices as provided.**
+
+                #### **Example Format:**
+
+                ## **Main service Page**
+                At {company_name}, we provide expert solar panel installation services designed to maximize energy efficiency and savings. Our goal is to make solar energy accessible and affordable, ensuring that your home or business benefits from clean and sustainable power.
+
+                ### **subservice1**
+                Our professional team installs high-quality solar panels that are tailored to your property's needs. We assess your location, energy consumption, and budget to create an optimal solar solution that maximizes savings and efficiency.
+
+                ### **subservice2**
+                We provide comprehensive maintenance services to keep your solar system operating at peak performance. This includes panel inspections, cleaning, and system diagnostics to ensure longevity and efficiency.
+
+                ### **subservice3**
+                If your solar panels or inverters develop faults, our skilled technicians offer prompt repair services to restore functionality. Whether it's wiring issues, faulty components, or system inefficiencies, we quickly diagnose and fix the problem.
+
+                ### **subservice4**
+                Our solar consultation services include expert advice on the best solar solutions for your property. We conduct site evaluations, financial analysis, and system design planning to ensure that your investment yields the best results.
+
+                and more if there are additional subservices...
+
+                ---
+
+                ## **Main service** Page
+                Proper wiring ensures your solar power system functions safely and efficiently. At {company_name}, we provide expert electrical wiring services to guarantee seamless energy distribution from your solar panels to your home or business.
+
+                ### **subservice1**
+                We offer fixed wiring solutions that enhance the stability and reliability of your solar energy system. Our professional installations ensure compliance with safety standards and optimal electrical performance.
+
+                ### **subservice2**
+                If your current electrical wiring is outdated or inadequate for your solar energy needs, we provide new wiring solutions that optimize energy flow and improve overall system efficiency.
+
+                and more if there are additional subservices...
+
+                ---
+                and more if there are additional service...
+
+                #### **3. Service Process Overview**
+                - Provide a **clear, step-by-step breakdown** of how the service is delivered.
+                - Keep it **simple, engaging, and informative**.
+
+                #### **4. Call to Action (CTA)**
+                - End with a **strong, persuasive CTA**, such as:
+                  - **"Contact us today for a free consultation!"**
+                  - **"Book your service now and enjoy hassle-free solar solutions."**
+
+                #### **5. SEO Optimization & Readability**
+                - Ensure content is **SEO-optimized** for better search rankings.
+                - Use **concise paragraphs, bullet points, and subheadings** for easy reading.
+
+                #### **6. Adaptability**
+                - **Do not mention specific locations unless required.**
+
+                - **Use this research:** {research_data}
+                - **Apply these SEO best practices:** {seo_data}
+
+                The content must be **engaging, structured, and persuasive**, ensuring customers can easily navigate and understand your services.
+
+                ---
+
+                """,
+        
+          "individual_service_page": f"""
+                Instruction: Generate high-quality, human-like content for the following services: `{services}`.
+
+                Each service listed below must have its **own dedicated page** with content that is **specific to that subservice**. Do not mix content from one subservice with another. The writing should be well-structured, engaging, and informative.
+
+                For each subservice in `{services}`, follow this structure:
+
+                ---
+
+                ### **[Subservice Name]**
+
+                #### **Introduction (H1 Heading)**
+                - Provide an engaging introduction that explains the importance of `[Subservice Name]`.
+
+                #### **What is [Subservice Name]? (H2 Heading)**
+                - Define `[Subservice Name]` in simple terms.
+                - Explain how it works and why it is necessary.
+                - Avoid including details that belong to other services.
+
+                #### **Key Benefits of [Subservice Name] (H2 Heading)**
+                - List the main benefits of this specific service.
+                - Explain how customers will benefit from choosing this service.
+                - Ensure the points are clear, concise, and persuasive.
+
+                #### **Signs You Need [Subservice Name] (H2 Heading) (if applicable)**
+                - Provide a list of signs that indicate when this service is needed.
+                - Use bullet points for easy readability.
+                - Ensure the points are directly relevant to this service.
+
+                #### **Call to Action (H2 Heading)**
+                - End with a strong call to action, encouraging visitors to book or contact the company.
+                - Provide a phone number, email, or a link to the booking page.
+
+                ---
+
+                **Important Notes:**
+                - Each **subservice must have its own dedicated page** with content related only to that subservice.
+                - **Generate a separate response for each subservice in `{services}`.**
+                - Do **not** mix content from one subservice with another.
+                - Maintain a professional yet engaging tone.
+                - Use structured headings and bullet points for clarity and readability.
+
+                """
                         
 }
     pages = {key: llm.invoke(prompt) for key, prompt in prompts.items()}
@@ -605,22 +619,22 @@ def evaluate_content_quality(state: ContentState) -> ContentState:
 workflow.add_node("research_step", research_task)
 workflow.add_node("seo_step", seo_optimization_task)
 workflow.add_node("writing_step", content_writing_task)
-workflow.add_node("refine_content", refine_content)
-workflow.add_node("evaluate_content_quality", evaluate_content_quality)
-workflow.add_edge("refine_content", "evaluate_content_quality")
+# workflow.add_node("refine_content", refine_content)
+# workflow.add_node("evaluate_content_quality", evaluate_content_quality)
+# workflow.add_edge("refine_content", "evaluate_content_quality")
 # ✅ Define Transitions
 workflow.set_entry_point("research_step")
 workflow.add_edge("research_step", "seo_step")
 workflow.add_edge("seo_step", "writing_step")
-workflow.add_edge("writing_step", "refine_content")
-workflow.add_conditional_edges(
-"evaluate_content_quality",
-lambda state: "refine_content" if state["quality_score"] <= 1 else END,
-{
-    "refine_content": "refine_content",
-    END: END
-}
-)
+# workflow.add_edge("writing_step", "refine_content")
+# workflow.add_conditional_edges(
+# "evaluate_content_quality",
+# lambda state: "refine_content" if state["quality_score"] <= 1 else END,
+# {
+#     "refine_content": "refine_content",
+#     END: END
+# }
+# )
 content_graph = workflow.compile()
 def generate_content(idea: str, company_name: str, services: Dict[str, List[str]], service_area: str) -> Dict:
     state = content_graph.invoke({
@@ -644,6 +658,6 @@ def generate_content(idea: str, company_name: str, services: Dict[str, List[str]
             })
             individual_service_pages[sub_service] = sub_service_state["service_page"]
 
-    state["individual_service_pages"] = individual_service_pages
+    state["individual_service_page"] = individual_service_pages
 
     return state
