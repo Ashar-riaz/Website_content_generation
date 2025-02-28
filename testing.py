@@ -58,30 +58,25 @@ class RequestModel(BaseModel):
     service_area: List[str]
     service_area_services: Dict[str, Dict[str, List[str]]]
 
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
+@app.post("/generate-contentsd/")
+def generate_content(data: RequestModel):
+   
+        state = content_graph.invoke({
+            "idea": data.idea,
+            "company_name": data.company_name,
+            "services": data.services,
+            "service_area": data.service_area,
+            "service_area_services": data.service_area_services,
+            "quality_score": 0  # Initialize quality score
+        })
 
-
-
-def generate_content(data):  # Remove @app.post to make it an importable function
-    state = content_graph.invoke({
-        "idea": data["idea"],
-        "company_name": data["company_name"],
-        "services": data["services"],
-        "service_area": data["service_area"],
-        "service_area_services": data["service_area_services"],
-        "quality_score": 0
-    })
-
-    response = {
-        "home_page": state.get("home_page", ""),
-        "about_us_page": state.get("about_us_page", ""),
-        "service_page": state.get("service_page", ""),
-        "individual_service_page": state.get("individual_service_page", {}),
-        "service_area_page": state.get("service_area_page", {})
-    }
-    
-    return response  # Return dictionary instead of JSONResponse
-
-
+        response = {
+            "home_page": state["home_page"],
+            "about_us_page": state["about_us_page"],
+            "service_page": state["service_page"],
+            "individual_service_page": state["individual_service_page"],
+            "service_area_page": state["service_area_page"]
+        }
+        
+        return response
   

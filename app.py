@@ -1,9 +1,6 @@
 import streamlit as st
-import requests
 import json
-
-# FastAPI endpoint
-API_URL = "http://127.0.0.1:8000/generate-contentsd/"  # Change to your actual FastAPI URL
+from main import generate_content  # Import the function directly
 
 st.title("Website Content Generator")
 
@@ -32,6 +29,7 @@ for area in service_areas_list:
     for service in services.keys():
         sub_services_area = st.text_area(f"{area} - Sub-services for {service} (comma-separated)", key=f"{area}_{service}")
         service_area_services[area][service] = [s.strip() for s in sub_services_area.split(",") if s.strip()]
+
 # Submit button
 if st.button("Generate Content"):
     # Prepare the request payload
@@ -43,35 +41,29 @@ if st.button("Generate Content"):
         "service_area_services": service_area_services
     }
 
-    # Send request to FastAPI
+    # Call the function directly instead of making an API request
     try:
-        response = requests.post(API_URL, json=payload)
-        if response.status_code == 200:
-            data = response.json()
-            st.success("Content Generated Successfully!")
-            st.write("API Response:", data)
+        data = generate_content(payload)
+        st.success("Content Generated Successfully!")
 
-            st.subheader("Home Page")
-            st.write(data.get("home_page", "Not available"))
-            
-            st.subheader("About Us Page")
-            st.write(data.get("about_us_page", "Not available"))
-            
-            st.subheader("Service Page")
-            st.write(data.get("service_page", "Not available"))
+        st.subheader("Home Page")
+        st.write(data.get("home_page", "Not available"))
+        
+        st.subheader("About Us Page")
+        st.write(data.get("about_us_page", "Not available"))
+        
+        st.subheader("Service Page")
+        st.write(data.get("service_page", "Not available"))
 
-            st.subheader("🔹 Individual Service Pages")
+        st.subheader("🔹 Individual Service Pages")
+        individual_service_page = data.get("individual_service_page", "")
+        if individual_service_page:
+            st.markdown(individual_service_page)
 
-            individual_service_page = data.get("individual_service_page", "")
-            if individual_service_page:
-                st.markdown(individual_service_page)  # Display Markdown content
+        st.subheader("🌍 Service Area Page")
+        service_area_page = data.get("service_area_page", "")
+        if service_area_page:
+            st.markdown(service_area_page)
 
-            st.subheader("🌍 Service Area Page")
-            service_area_page = data.get("service_area_page", "")
-            if service_area_page:
-                st.markdown(service_area_page)  # Display Markdown content
-
-            
-    except requests.exceptions.RequestException as e:
-        st.error(f"Request failed: {e}")
-
+    except Exception as e:
+        st.error(f"Error: {e}")
