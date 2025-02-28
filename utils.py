@@ -1,33 +1,38 @@
-
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
+import os
+from langgraph.graph import END
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.tools import DuckDuckGoSearchRun
-import os
-from dotenv import load_dotenv
-from langgraph.graph import StateGraph, END
+from langgraph.graph import StateGraph
 from typing import Dict, List
-load_dotenv()
-
-GEMINI_API_KEY = os.getenv("GOOGLE_API_KEY")
-# Initialize LLM
-llm = ChatGoogleGenerativeAI(model="gemini-1.0-pro",google_api_key=GEMINI_API_KEY)
+# ✅ Set Google Gemini API Key
+os.environ["GOOGLE_API_KEY"] = "AIzaSyA6ks9hQCb29yaaEBs2XQXrPK86vrMhhG8"
+# ✅ Initialize Google Gemini Model
+llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
+# ✅ Define Search Tool
 search_tool = DuckDuckGoSearchRun(region="uk-en", safe="strict")
-
+app = FastAPI()
 class ContentState(Dict):
     idea: str
     company_name: str
-    services: Dict[str, List[str]]
-    service_area: str
+    services: Dict[str, List[str]]  # Main services with their sub-services
+    service_area: Dict[str, Dict[str, str]]  # Each area has multiple sub-service pages
     research_data: str
     seo_optimization: str
     home_page: str
     about_us_page: str
     service_page: str
-    individual_service_pages: Dict[str, str]  # Multiple sub-service pages
+    individual_service_page: Dict[str, str]  # Single service pages
+    service_area_page: Dict[str, Dict[str, str]]  # Each area with its sub-services
     quality_score: int
+    feedback: str
+    content: str
+    service_area_services: Dict[str, Dict[str, List[str]]]  # Each area has multiple sub-service pages
+
 
 # ✅ Define Workflow
 workflow = StateGraph(ContentState)
-
 
 # ✅ Research Task
 def research_task(state: ContentState) -> ContentState:
@@ -35,7 +40,6 @@ def research_task(state: ContentState) -> ContentState:
     research_data = search_tool.run(research_query )
     state.update({"research_data": research_data})
     return state
-
 
 # ✅ SEO Optimization Task
 def seo_optimization_task(state: ContentState) -> ContentState:
@@ -48,10 +52,10 @@ def seo_optimization_task(state: ContentState) -> ContentState:
 def content_writing_task(state: ContentState) -> ContentState:
     research_data = state["research_data"]
     seo_data = state["seo_optimization"]
-    # services = "\n".join(f"- {service}" for service in state["services"])
+    services = "\n".join(f"- {service}" for service in state["services"])
     main_services = list(state["services"].keys())  # Extract main service names
     main_services_str = "\n".join(f"- {service}" for service in main_services)  # Format for readability
- 
+
 # Extract only subservices
     services_list = [
         subservice
@@ -60,111 +64,124 @@ def content_writing_task(state: ContentState) -> ContentState:
     ]
 
 # Convert to bullet points
-    services = "\n".join(f"- {sub}" for sub in services_list)
-
- 
+    # services = "\n".join(f"- {sub}" for sub in services_list)
     service_area = "\n".join(f"- {area}" for area in state["service_area"])
     company_name=state["company_name"]
+    service_area_services=state["service_area_services"]
+
+
+    result = []
+    for city, services in service_area_services.items():
+        for value_list in services.values():
+            for value in value_list:
+                result.append((city, value))
+    formatted_result = ""
+    for city, services in service_area_services.items():
+        subservices = "\n    ".join([value for value_list in services.values() for value in value_list])
+        formatted_result += f"# **SERVICE AREA NAME `{city}`**\n    name of the subservices\n    {subservices}\n\n"
+
     prompts = {
-    "home_page": f"""You are an expert web content writer specializing in **SEO-optimized, high-converting website copy**. Your task is to write a compelling **Home Page** for a company named **{company_name}**, which provides **{services}**. Your writing should be persuasive, well-structured, and engaging while maintaining a clear, informative tone. 
+    "home_page": f"""You are an expert web content writer specializing in **SEO-optimized, high-converting website copy**. Your task is to write a compelling **Home Page** for a company named **{company_name}**, which provides **{services}**. Your writing should be persuasive, well-structured, and engaging while maintaining a clear, informative tone.
 
-              ### **Key Requirements:**  
+              ### **Key Requirements:**
 
-              #### **1. Engaging Headline & Subheadline:**  
-              - Create a powerful, attention-grabbing **headline** that highlights the company’s expertise and core offering.  
-              - Follow with a **subheadline** that builds trust and credibility while reinforcing key benefits.  
+              #### **1. Engaging Headline & Subheadline:**
+              - Create a powerful, attention-grabbing **headline** that highlights the company’s expertise and core offering.
+              - Follow with a **subheadline** that builds trust and credibility while reinforcing key benefits.
 
-              #### **2. Strong Introduction (First 2-3 Sentences Must Hook the Reader):**  
-              - Clearly introduce the company, its specialization, and the core services.  
-              - Ensure the tone is professional yet friendly to build trust and engagement.  
+              #### **2. Strong Introduction (First 2-3 Sentences Must Hook the Reader):**
+              - Clearly introduce the company, its specialization, and the core services.
+              - Ensure the tone is professional yet friendly to build trust and engagement.
 
-              #### **3. Service Sections (Well-Structured & Persuasive):**  
-              - **Break down key services** (**{services}**) into well-defined sections.  
-              - Explain the benefits of each service using a persuasive yet informative style.  
-              - Highlight **unique selling points** (e.g., fast installation, expert engineers, same-day service).  
-              - If applicable, mention warranties, certifications, and brand affiliations.  
+              #### **3. Service Sections (Well-Structured & Persuasive):**
+              - **Break down key services** (**{services_list}**) into well-defined sections.
+              - Explain the benefits of each service using a persuasive yet informative style.
+              - Highlight **unique selling points** (e.g., fast installation, expert engineers, same-day service).
+              - If applicable, mention warranties, certifications, and brand affiliations.
               - Service show in a paragraph. The heading should be the service name and then the paragraph should be the service description.
 
-              #### **4. Trust & Experience (Builds Authority):**  
-              - Showcase the company’s years of experience, qualifications, and certifications.  
-              - Mention **Gas Safe registration**, City and Guilds qualifications, or any other relevant credentials.  
+              #### **4. Trust & Experience (Builds Authority):**
+              - Showcase the company’s years of experience, qualifications, and certifications.
+              - Mention **Gas Safe registration**, City and Guilds qualifications, or any other relevant credentials.
 
-              #### **5. Customer Benefits & Competitive Advantages:**  
-              - Clearly **differentiate** this company from competitors.  
-              - Emphasize **why customers should choose this business** (e.g., fast service, 7-day availability, great warranties).  
-              - Mention any **freebies or added-value services** (e.g., “Free Smart Thermostat with Every Boiler Installation”).  
-              
+              #### **5. Customer Benefits & Competitive Advantages:**
+              - Clearly **differentiate** this company from competitors.
+              - Emphasize **why customers should choose this business** (e.g., fast service, 7-day availability, great warranties).
+              - Mention any **freebies or added-value services** (e.g., “Free Smart Thermostat with Every Boiler Installation”).
+
               #### **6. **Why Choose Us?** (Unique Selling Points)
-              - Emphasize what sets the company apart (e.g., 24/7 availability, warranties, financing options and add other which give plus).  
-              - Reinforce a **customer-first approach**, focusing on transparency, trust, and superior service.  
+              - Emphasize what sets the company apart (e.g., 24/7 availability, warranties, financing options and add other which give plus).
+              - Reinforce a **customer-first approach**, focusing on transparency, trust, and superior service.
 
-              #### **7. Call to Action (Drives Conversions):**  
-              - End with a **strong, action-oriented CTA**, such as:  
-                - “Get a Free Quote Today – Call Now!”  
-                - “Book Your Boiler Installation in Just 24 Hours!”  
-              - Encourage urgency and easy next steps.  
+              #### **7. Call to Action (Drives Conversions):**
+              - End with a **strong, action-oriented CTA**, such as:
+                - “Get a Free Quote Today – Call Now!”
+                - “Book Your Boiler Installation in Just 24 Hours!”
+              - Encourage urgency and easy next steps.
 
-              #### **8. SEO Optimization (Ensures Visibility):**  
-              - Naturally integrate **high-ranking keywords** without keyword stuffing.  
-              - Ensure content is structured for **readability and engagement**.  
-              - Generate a **compelling meta description** (160 characters max) that improves search engine click-through rates.  
+              #### **8. SEO Optimization (Ensures Visibility):**
+              - Naturally integrate **high-ranking keywords** without keyword stuffing.
+              - Ensure content is structured for **readability and engagement**.
+              - Generate a **compelling meta description** (160 characters max) that improves search engine click-through rates.
 
-              #### **9. Local Relevance (If Applicable):**  
-              - Ensure the content is adaptable to any location unless specified.  
-              - If a location is provided, highlight **local expertise** and availability.  
+              #### **9. Local Relevance (If Applicable):**
+              - Ensure the content is adaptable to any location unless specified.
+              - If a location is provided, highlight **local expertise** and availability.
 
-              **Use the following research data for accuracy:**  
-              {research_data}  
+              **Use the following research data for accuracy:**
+              {research_data}
 
-              **Apply these SEO best practices:**  
-              {seo_data}  
+              **Apply these SEO best practices:**
+              {seo_data}
 
-              Ensure the content is persuasive, engaging, and easy to read. Keep paragraphs short and **use bullet points for clarity when needed**. Your writing should feel **professional yet approachable**, with a strong focus on **conversion and engagement**.  
+              Ensure the content is persuasive, engaging, and easy to read. Keep paragraphs short and **use bullet points for clarity when needed**. Your writing should feel **professional yet approachable**, with a strong focus on **conversion and engagement**.
+              please not provide a code and html tag.
               """,
-"about_us_page": f"""You are an expert web content writer skilled in crafting **engaging, structured, and customer-focused About Us pages**.  
-              Write a professional and compelling **About Us** page for **{company_name}**, a trusted provider of **{services}**. The content must be well-structured, engaging, and clearly communicate the company’s mission, services, and coverage areas.  
+"about_us_page": f"""You are an expert web content writer skilled in crafting **engaging, structured, and customer-focused About Us pages**.
+                Write a professional and compelling **About Us** page for **{company_name}**, a trusted provider of **{services}**. The content must be well-structured, engaging, and clearly communicate the company’s mission, services, and coverage areas.
 
-              ### **Key Requirements:**  
+                ### **Key Requirements:**
 
-              #### **1. Introduction (Who We Are & What We Do)**  
-              - Start with a strong, engaging introduction that:  
-                - Establishes expertise and credibility.  
-                - Mentions **years of experience, location, and key services**.  
-                - Highlights the company’s commitment to **quality, customer satisfaction, and professional service**. 
-                - Give in a detailed information about the company. 
+                #### **1. Introduction (Who We Are & What We Do)**
+                - Start with a strong, engaging introduction that:
+                  - Establishes expertise and credibility.
+                  - Mentions **years of experience, location, and key services**.
+                  - Highlights the company’s commitment to **quality, customer satisfaction, and professional service**.
+                  - Give in a detailed information about the company.
 
-              #### **2. Our Mission & Values**  
-              - Describe the company’s **core values and commitment**:  
-                - Integrity, professionalism, and high-quality service.  
-                - Dedication to customer-first service and long-term client relationships.   
+                #### **2. Our Mission & Values**
+                - Describe the company’s **core values and commitment**:
+                  - Integrity, professionalism, and high-quality service.
+                  - Dedication to customer-first service and long-term client relationships.
 
-              #### **3. Service Overview (With Subservices in Bullet Points)**  
-              - Display only **the services exactly as provided in `{services}`**, without modifying or adding extra services.  
-              - Ensure subservices **stay in their original format** without splitting words.  
-              - Example structure:  
+                #### **3. Service Overview (With Subservices in Bullet Points)**
+                - Display only **the services exactly as provided in `{services_list}`**, without modifying or adding extra services.
+                - Ensure subservices **stay in their original format** without splitting words.
+                - Example structure:
 
-              {services}
-              #### **4. Areas We Serve (Exact Format & Integrity Preserved)**  
-              - Display only **the locations exactly as provided in `{service_area}`**.  
-              - Ensure locations with **multiple words remain intact** (e.g., "Newton Abbot" will not split).  
-              - Display in a **clean bullet-point list**.  
+                {services_list}
+                #### **4. Areas We Serve (Exact Format & Integrity Preserved)**
+                - Display only **the locations exactly as provided in `{service_area}`**.
+                - Ensure locations with **multiple words remain intact** (e.g., "Newton Abbot" will not split).
+                - Display in a **clean bullet-point list**.
 
-              {service_area}
+                {service_area}
 
-              #### **5. Call to Action (Encouraging Customer Engagement)**  
-              - End with a **clear and compelling CTA**, such as:  
-              - **"For expert services in {service_area}, contact us today!"**  
-              - **"Get in touch to schedule your consultation."**  
+                #### **5. Call to Action (Encouraging Customer Engagement)**
+                - End with a **clear and compelling CTA**, such as:
+                - **"For expert services in {service_area}, contact us today!"**
+                - **"Get in touch to schedule your consultation."**
 
-              ### **Page Structure:**  
-              1. **About {company_name}** (Introduction)  
-              2. **Our Mission & Values** (Commitment to quality and customer satisfaction)  
-              3. **Our Services** (List services dynamically from `{services}`)  
-              4. **Areas We Cover** (List locations dynamically from `{service_area}`)  
-              5. **Contact Us** (Call to Action)  
+                ### **Page Structure:**
+                1. **About {company_name}** (Introduction)
+                2. **Our Mission & Values** (Commitment to quality and customer satisfaction)
+                3. **Our Services** (List services dynamically from `{services_list}`)
+                4. **Areas We Cover** (List locations dynamically from `{service_area}`)
+                5. **Contact Us** (Call to Action)
 
-              Ensure the content is **concise, well-structured, and SEO-friendly**, using **bullet points** for readability and **natural keyword integration** for better search rankings.  
-              """,
+                Ensure the content is **concise, well-structured, and SEO-friendly**, using **bullet points** for readability and **natural keyword integration** for better search rankings.
+                please not provide a code and html tag.
+                """,
 
 "service_page": f"""You are a professional web content strategist and expert copywriter.
                 Create a **well-structured, engaging, and customer-focused service page** for {company_name}.
@@ -243,61 +260,94 @@ def content_writing_task(state: ContentState) -> ContentState:
                 The content must be **engaging, structured, and persuasive**, ensuring customers can easily navigate and understand your services.
 
                 ---
-
+                please not provide a code and html tag.
                 """,
-        
-          "individual_service_page": f"""
-                Instruction: Generate high-quality, human-like content for the following services: `{services}`.
+"individual_service_page": f"""
+                Instruction: Generate high-quality, human-like content for each of the following services: `{services_list}`.
 
-                Each service listed below must have its **own dedicated page** with content that is **specific to that subservice**. Do not mix content from one subservice with another. The writing should be well-structured, engaging, and informative.
+                Each service listed below must have its **own dedicated page** with content that is **specific to that subservice**. **Ensure that a response is generated for every subservice** without skipping any.
 
-                For each subservice in `{services}`, follow this structure:
+                **📌 Important Instructions:**
+                - Generate **a full separate response for each subservice** in `{services_list}`.
+                - Do **not** skip any subservice.
+                - Do **not** mix content between subservices.
+                - The content must be **unique for each subservice** and **not generic**.
+                - Maintain a **consistent format** and ensure high-quality, structured writing.
+                - The output must include **every subservice in the input list**.
+
+                ---
+
+                🔹 **For each subservice in `{services_list}`, use the following structure:**
 
                 ---
 
                 ### **[Subservice Name]**
 
-                #### **Introduction (H1 Heading)**
+                #### **Introduction**
                 - Provide an engaging introduction that explains the importance of `[Subservice Name]`.
+                - Mention why it is relevant for customers.
 
-                #### **What is [Subservice Name]? (H2 Heading)**
+                #### **What is [Subservice Name]?**
                 - Define `[Subservice Name]` in simple terms.
                 - Explain how it works and why it is necessary.
-                - Avoid including details that belong to other services.
+                - Ensure the content is **exclusive to this subservice**.
 
-                #### **Key Benefits of [Subservice Name] (H2 Heading)**
+                #### **Key Benefits of [Subservice Name]**
                 - List the main benefits of this specific service.
                 - Explain how customers will benefit from choosing this service.
-                - Ensure the points are clear, concise, and persuasive.
+                - Use **bullet points** for clarity.
 
-                #### **Signs You Need [Subservice Name] (H2 Heading) (if applicable)**
+                #### **Signs You Need [Subservice Name] (if applicable)**
                 - Provide a list of signs that indicate when this service is needed.
-                - Use bullet points for easy readability.
-                - Ensure the points are directly relevant to this service.
+                - Keep it **directly relevant** to this service.
 
-                #### **Call to Action (H2 Heading)**
-                - End with a strong call to action, encouraging visitors to book or contact the company.
-                - Provide a phone number, email, or a link to the booking page.
+                #### **Call to Action**
+                - End with a strong **Call to Action (CTA)**, encouraging visitors to **book, contact, or request a quote**.
+                - Include a **phone number, email, or link** for immediate action.
 
                 ---
 
-                **Important Notes:**
-                - Each **subservice must have its own dedicated page** with content related only to that subservice.
-                - **Generate a separate response for each subservice in `{services}`.**
-                - Do **not** mix content from one subservice with another.
-                - Maintain a professional yet engaging tone.
-                - Use structured headings and bullet points for clarity and readability.
+                **📌 Final Reminder:**
+                ✅ **Generate content for every subservice** listed in `{services_list}`.
+                ✅ Do **not** generate only one or a few subservices; all must be included.
+                ✅ Keep responses **structured, engaging, and informative**.
+                ✅ Maintain a **professional yet persuasive** tone.
+                ✅ Ensure **SEO-friendly** and **human-like writing**.
+                  please not provide a code and html tag.
+                """,
 
-                """
-                        
+"service_area_page": f"""
+Show the subservices according to the chosen service area.
+
+For each service in {formatted_result}, follow this structure, ensuring the tone is professional, engaging, and informative.
+
+---
+{city}
+
+### {value} in {city}
+- Write a compelling introduction about this subservice, highlighting why it is important and beneficial for customers in {city}. Explain its key features and how it solves a problem.
+
+- Provide additional details, such as the expertise of the team, the quality of service, or any guarantees. Ensure the content is specific, informative, and valuable to the customer.
+
+- If applicable, mention any unique aspects of this service in {city}, such as compliance with local regulations, availability, or special offers.
+
+- Ensure each subservice follows the same format while maintaining natural variations in wording.
+- shown in a paragraph. The heading should be the service name and then the paragraph should be the service description.
+- [Provide details about the second subservice, explaining its benefits and relevance to customers in {city}.]
+---
+- Show all the results.
+please not provide a code and html tag.
+"""
+
 }
-    pages = {key: llm.invoke(prompt) for key, prompt in prompts.items()}
+    pages = {key: llm.invoke(prompt).content for key, prompt in prompts.items()}
     state.update(pages)
+    print("content_done")
+
     return state
 
 
 def refine_content(state: ContentState) -> ContentState:
-    services = ", ".join(state["services"])
     prompts = {
         "refine_home_page_content": f"""You are an expert UK-based web content writer. Your task is to refine the following **Home Page Content** to match the structure, style, and detail level of top-tier UK service websites. The content should be well-organized, highly detailed, and formatted professionally.
         ---
@@ -364,7 +414,7 @@ def refine_content(state: ContentState) -> ContentState:
 
         ### **NOW, Refine the Following Home Page Content to Match These High-Detail Examples:**
 
-        {state["home_page"].content}
+        {state["home_page"]}
 
         ---
 
@@ -378,7 +428,7 @@ def refine_content(state: ContentState) -> ContentState:
         ✅ **Ensure Content is UK Market-Specific:** Adapt services, pricing models, and customer expectations to fit UK consumer standards.
 
         Return the improved home page content in a **fully structured, highly detailed, and polished format** suitable for a professional UK service business website.""",
-        
+
         "refine_about_us_page_content": f""" You are an expert UK-based content writer specializing in home services. Your task is to refine the following **About Us Page Content** for a heating and plumbing company to match the structure, style, and detail level of top-tier UK service websites. The content should be well-organized, informative, and highly professional.
         ---
         ### **Few-Shot Examples of Desired Structure (UK-Specific, Highly Detailed)**
@@ -428,7 +478,7 @@ def refine_content(state: ContentState) -> ContentState:
 
         ### **NOW, Refine the Following About Us Content to Match These High-Detail Examples:**
 
-        {state["about_us_page"].content}
+        {state["about_us_page"]}
 
         ---
 
@@ -442,7 +492,7 @@ def refine_content(state: ContentState) -> ContentState:
 
         Return the improved **About Us Page** content in a **fully structured, highly detailed, and polished format** suitable for a professional UK service business website.""",
 
-        
+
         "refine_service_page": f""" You are an expert in creating **SEO-optimized, highly detailed, and engaging** service pages for business websites.
          Your task is to **refine the service page content** to make it more structured, comprehensive, and conversion-friendly.
          ### **Instructions for Refinement:**
@@ -489,7 +539,7 @@ def refine_content(state: ContentState) -> ContentState:
 
          ### **Now, refine the following service page content into a highly detailed, structured, and persuasive version like the example above:**
 
-         {state["service_page"].content}
+         {state["service_page"]}
 
          **Make sure to:**
          - Expand the details of each section.
@@ -500,107 +550,149 @@ def refine_content(state: ContentState) -> ContentState:
 
          Provide the refined content in a **well-formatted and professional** manner.
          """,
-        
-    #     "refine_individual_service_page" : f""" You are an expert at generating professional, structured, and SEO-optimized service pages for a business website.
 
-    #      Please **rewrite and refine** the following individual service page content using the exact format of the examples provided below.
-    #      Your response **must strictly follow the same structure, tone, and clarity** as the examples.
-    #       ### **Service: {services}**
-    #       there is the list of service  {services} so show one by one.
-    #      **Instructions:**
-    #      - Maintain the **exact headings, formatting, and structure** used in the examples.
-    #      - Ensure **clarity and professionalism** in the content.
-    #      - Use **engaging and SEO-friendly language**.
-    #      - Structure the content with **clear headings, subheadings, and sections**.
-    #      - Adapt the text while keeping it **relevant to the service and location**.
+        "refine_individual_service_page" : f""" You are an expert at generating professional, structured, and SEO-optimized service pages for a business website.
 
-    #      **Example Format of a Well-Structured Service Page:**
-    #      ```
-    #      SERVICE AREAS PAGES
-    #      Exeter
+         Please **rewrite and refine** the following individual service page content using the exact format of the examples provided below.
+         Your response **must strictly follow the same structure, tone, and clarity** as the examples.
+         **Instructions:**
+         - Maintain the **exact headings, formatting, and structure** used in the examples.
+         - Ensure **clarity and professionalism** in the content.
+         - Use **engaging and SEO-friendly language**.
+         - Structure the content with **clear headings, subheadings, and sections**.
+         - Adapt the text while keeping it **relevant to the service and location**.
 
-    #      Heating Services for Exeter
+         **Example Format of a Well-Structured Service Page:**
+         ```
+         SERVICE AREAS PAGES
+         Exeter
 
-    #      Whether you need a new boiler, central heating installation, power flushing service, or boiler repair, our Gas Safe engineers are here to ensure your home stays warm and comfortable. South Coast Plumbing and Heating covers Exeter and provides a complete range of services for Natural Gas and oil boilers.
+         Heating Services for Exeter
 
-    #      New Boilers Installed in Exeter
-    #      Are you looking to upgrade to a new, energy-efficient boiler in Exeter? We supply and install A-rated gas and oil boilers from leading manufacturers. Our experienced gas heating engineers can help you choose the right replacement boiler for your home. Get an online quote from us for a new boiler that delivers optimum efficiency and reduces your energy bills.
+         Whether you need a new boiler, central heating installation, power flushing service, or boiler repair, our Gas Safe engineers are here to ensure your home stays warm and comfortable. South Coast Plumbing and Heating covers Exeter and provides a complete range of services for Natural Gas and oil boilers.
 
-    #      We Service Gas and Oil Boilers in Exeter
-    #      Regular maintenance is key to ensuring your boiler works safely and efficiently all year round. Our team offers annual boiler servicing for homes across Exeter. During the boiler service, we perform a full inspection, identifying any potential issues before they become costly repairs. Keeping your boiler in top condition can also help to extend its lifespan and maintain your warranty.
+         New Boilers Installed in Exeter
+         Are you looking to upgrade to a new, energy-efficient boiler in Exeter? We supply and install A-rated gas and oil boilers from leading manufacturers. Our experienced gas heating engineers can help you choose the right replacement boiler for your home. Get an online quote from us for a new boiler that delivers optimum efficiency and reduces your energy bills.
 
-    #      Boilers Fixed Professionally in Exeter
-    #      If your boiler breaks down, you don’t want to be left without heating or hot water for long. We offer fast and reliable boiler repairs throughout Exeter. Our team of Gas Safe engineers is fully equipped to diagnose and fix common boiler issues, such as leaks, no hot water, and non-firing systems. If you’re experiencing boiler problems, contact us for a quick, professional repair service.
+         We Service Gas and Oil Boilers in Exeter
+         Regular maintenance is key to ensuring your boiler works safely and efficiently all year round. Our team offers annual boiler servicing for homes across Exeter. During the boiler service, we perform a full inspection, identifying any potential issues before they become costly repairs. Keeping your boiler in top condition can also help to extend its lifespan and maintain your warranty.
 
-    #      Air Source Heat Pumps
-    #      Ask our team to give you a quote for a new air source heat pump in Exeter. Renewable energy products are the next generation in heating technology, so ask us about installing it in your home. We are your local renewable energy experts, available to install the best heat pump system to suit your home in Exeter.
+         Boilers Fixed Professionally in Exeter
+         If your boiler breaks down, you don’t want to be left without heating or hot water for long. We offer fast and reliable boiler repairs throughout Exeter. Our team of Gas Safe engineers is fully equipped to diagnose and fix common boiler issues, such as leaks, no hot water, and non-firing systems. If you’re experiencing boiler problems, contact us for a quick, professional repair service.
 
-    #      All Plumbing for Exeter
-    #      When you need a reliable plumber in Exeter, our team is here to help. We handle all types of plumbing projects, including general plumbing and emergency plumbing. You can count on us for prompt and professional service every time. For new kitchen or bathroom plumbing and 24-hour plumbers, our Exeter plumbers have you covered.
+         Air Source Heat Pumps
+         Ask our team to give you a quote for a new air source heat pump in Exeter. Renewable energy products are the next generation in heating technology, so ask us about installing it in your home. We are your local renewable energy experts, available to install the best heat pump system to suit your home in Exeter.
 
-    #      Commercial Boilers & Plumbing Exeter
-    #      If you need a commercial plumber or heating engineer for your Exeter business, then South Coast Plumbing and Heating is the best team to contact. We install and maintain commercial boilers and hot water systems in Exeter. We also cover commercial plumbing projects.
-    #      ```
+         All Plumbing for Exeter
+         When you need a reliable plumber in Exeter, our team is here to help. We handle all types of plumbing projects, including general plumbing and emergency plumbing. You can count on us for prompt and professional service every time. For new kitchen or bathroom plumbing and 24-hour plumbers, our Exeter plumbers have you covered.
 
-    #     **Now, rewrite the following service page content to match the format above, strictly follow:**
+         Commercial Boilers & Plumbing Exeter
+         If you need a commercial plumber or heating engineer for your Exeter business, then South Coast Plumbing and Heating is the best team to contact. We install and maintain commercial boilers and hot water systems in Exeter. We also cover commercial plumbing projects.
+         ```
 
-    #     ```
-    #     {state["individual_service_page"].content}
-    #     ```
+        **Now, rewrite the following service page content to match the format above, strictly follow:**
 
-    #     **Your response must follow the example structure exactly.**
-    # """
+        ```
+        {state["individual_service_page"]}
+        ```
+
+        **Your response must follow the example structure exactly.**
+    """,
+        "service_area_page": f""" Yor task is assigned a refine content of the page {state["service_area_page"]}. I peovide the some example check them and then refine the content.
+Few-Shot Examples
+Here are well-structured examples of service area pages to guide the refinement process:
+
+Example 1: Blackburn Area Page
+"Blackburn’s Boiler & Plumbing Experts. We are a plumbing and heating specialist covering Blackburn in Lancashire and the surrounding areas. Our team is available for new boiler installations, repairs, and servicing for all types of heating systems in Blackburn. We also handle a wide range of plumbing services, including emergency plumbing. If you're interested in renewable heating solutions, ask us about installing an air-source heat pump for your home in the Blackburn area."
+
+(Continue following the structured sections, ensuring professional, high-quality, and location-specific content.)
+
+Example 2: Bolton Area Page
+"Bolton’s Boiler & Plumbing Experts. Jaws Gas Services is your trusted plumbing and heating specialist serving Bolton and the surrounding areas. Our skilled team provides new boiler installations, repairs, and servicing for all types of heating systems in Bolton. We also offer a comprehensive range of plumbing services, including 24/7 emergency plumbing support. If you're exploring renewable heating options, ask us about installing an air-source heat pump in your Bolton home."
+
+(Continue following the structured sections, refining language, and ensuring clarity and engagement.)
+
+Important Notes:
+✅ Each service area must have its own dedicated page with content related only to that location.
+✅ Maintain structure, clarity, and a professional yet engaging tone.
+✅ Use headings and bullet points for improved readability.
+✅ Ensure consistency across all service area pages.
+        """
+
     }
     pages = {key: llm.invoke(prompt) for key, prompt in prompts.items()}
     state.update(pages)
+    print("refine_done")
     return state
 
-def evaluate_content_quality(state: ContentState) -> ContentState:
-    """Evaluates the quality of the given content and assigns a score from 0 to 10.
-    If the score is 7 or below, it suggests regeneration.
-    """
-    prompt = f"""
-    ### **Role & Responsibility**
-    You are an **extremely strict content quality evaluator**, ensuring that the provided website content is **highly professional, conversion-focused, human-like, and SEO-optimized**.
-    Your job is to **identify even the smallest weaknesses** and ensure that only **exceptional** content is accepted.
 
-    ### **Evaluation Criteria (Be Extremely Critical)**
-    1. **Readability & Flow** – Is the content **crystal clear** and **engaging**, or does it contain **clunky phrasing, awkward transitions, or unnecessary complexity**?
-    2. **Coherence & Structure** – Does the content **flow logically** with **no redundancy or repetition**? Are sections **properly structured** with **clear headers**?
-    3. **Depth & Relevance** – Is the content **deeply informative** and **highly relevant** to plumbing, heating, and boiler services, or is it **generic and lacking real value**?
-    4. **SEO Optimization** – Does the content **seamlessly integrate important keywords** while avoiding **keyword stuffing**? Are **headings, subheadings, and formatting** properly optimized?
-    5. **Factual Accuracy** – Is the content **technically sound and correct**? Are there **any vague, misleading, or inaccurate claims**?
-    6. **Human-like & Persuasive Tone** – Does the content read **smoothly and naturally**, or does it sound **robotic, generic, or AI-generated**?
-    7. **Grammar & Language** – Are there **any grammar mistakes, typos, awkward sentence structures, or inconsistencies**?
-    8. **Persuasiveness & Conversion Ability** – Does the content **convince customers to take action (e.g., request a quote, book a service)**? Are CTAs **strong and compelling**?
+def evaluate_content_quality(state: ContentState) -> ContentState:
+    """Evaluates content quality, ensuring fair scoring that reflects real improvements."""
+
+
+    previous_score = state.get("quality_score", None)  # Get previous score if available
+  # Get previous score if available
+
+    prompt = f"""
+    ### **Strict Content Quality Evaluation (NO Guesswork Allowed)**
+    You are a **highly strict but fair content evaluator**. Your job is to **accurately measure quality improvements** and ensure a logical score adjustment.
 
     ---
 
-    ### **Scoring System (Be VERY Harsh – Only Near-Perfect Content Gets High Scores)**
-    - **0-3: Unacceptable** – Poorly written, unclear, lacks professionalism. Needs a total rewrite.
-    - **4-6: Below Average** – Some acceptable elements, but **not good enough** for high-quality business content. Needs serious improvement.
-    - **7: Average** – Acceptable but still **far from perfect**. Requires multiple refinements.
-    - **8: Above Average** – Decent, but **lacks the level of refinement needed for top-tier content**. Needs adjustments.
-    - **9: Almost There** – High quality, **but still room for final polishing**.
-    - **10: Perfect** – **Extremely rare.** Only award a **10** if the content is **flawless, highly persuasive, and perfectly structured**.
+    ### **🚨 VERY IMPORTANT – STRICT RULES 🚨**
+    - **You MUST compare the content to its previous version.** If no prior version is available, evaluate as usual.
+    - **If improvements have been made, the score should increase.** If the score stays the same or drops, you must justify why.
+    - **DO NOT suggest changes unrelated to the provided content.** No hallucinations about missing videos, testimonials, or interactive elements.
+    - **All feedback must be content-based, fact-driven, and specific.**
+    - **You MUST provide at least 5 unique, real improvement areas**—no generic feedback.
+
+    ---
+
+    ### **Evaluation Criteria (Be Critical, But Only on Real Issues)**
+    1. **Readability & Flow** – Does the content read smoothly and professionally?
+    2. **Logical Structure & Clarity** – Is the content well-structured with clear headings and transitions?
+    3. **Depth & Relevance** – Does it provide unique insights and valuable details?
+    4. **SEO Optimization** – Are keywords well-integrated and formatting SEO-friendly?
+    5. **Accuracy & Credibility** – Are all claims factually correct, with no vague statements?
+    6. **Persuasiveness & CTA Strength** – Are the calls to action compelling?
+    7. **Grammar, Spelling & Language Precision** – Any typos or awkward phrasing?
+
+    ---
+
+    ### **Scoring System (Adjust Fairly Based on Changes)**
+    - **0-3: Unacceptable** – Major issues. Needs total rewrite.
+    - **4-6: Below Average** – Needs significant work before being usable.
+    - **7: Average** – Acceptable, but **lacks refinement**.
+    - **8: Above Average** – Good, but **not quite premium quality**.
+    - **9: Almost There** – High quality, **minor refinements needed**.
+    - **10: Perfect** – **Extremely rare.** Must be **flawless and highly persuasive**.
 
     ---
 
     ### **Content to Evaluate:**
-
     ```
-    {state["home_page"].content}
-    {state["about_us_page"].content}
-    {state["service_page"].content}
-  
+    {state["home_page"]}
+    {state["about_us_page"]}
+    {state["service_page"]}
+    {state["individual_service_page"]}
+    {state["service_area_page"]}
     ```
 
-    **Strictly return ONLY this format:**
-    - **Quality Score: X/10**
-    - **Reason for Score: [Concise Explanation]**
-    - **Key Areas to Improve (if applicable)**
+    ---
+
+    ### **Final Output Format (STRICTLY FOLLOW THIS)**
+    **Quality Score: X/10**
+    **Reason for Score (MUST justify if score drops or stays the same):**
+    - **[Short but detailed explanation]**
+    **Key Areas to Improve (MUST list 5+ real, unique issues):**
+    - **[Issue 1]**
+    - **[Issue 2]**
+    - **[Issue 3]**
+    - **[Issue 4]**
+    - **[Issue 5]**
+
+    **If the score does NOT increase, explicitly state why.**
     """
-
     response = llm.invoke(prompt)
     output = response.content
 
@@ -611,53 +703,192 @@ def evaluate_content_quality(state: ContentState) -> ContentState:
     except (IndexError, ValueError):
         score = 0  # Default to 0 if parsing fails
 
-    # **Fix: Return updated state instead of just the score**
+    # Extract feedback
+    improvement_lines = []
+    capture = False
+    for line in output.split("\n"):
+        if "Key Areas to Improve" in line:
+            capture = True
+            continue
+        if capture and line.strip():
+            improvement_lines.append(line.strip())
+
+    improvements = "\n".join(improvement_lines) if improvement_lines else "No major weaknesses found."
+
+    # **Fix Score Inconsistency: Force Justification**
+    if previous_score is not None and score < previous_score:
+        print("\n🚨 **Warning:** The score decreased! Checking for justification... 🚨")
+        if "explicitly state why" not in output:
+            print("⚠️ No valid reason for lowering the score. Reverting to previous score.")
+            score = previous_score  # Prevent unfair decreases
+
+    # Print Feedback
+    print(f"\n=== Quality Evaluation ===")
+    print(f"Content Quality Score: {score}/10")
+    print(f"Key Areas to Improve:\n{improvements}\n")
+
+    # Update State
     state["quality_score"] = score
-    return state  # **Ensure we return the updated dictionary**
-
-# ✅ Define Workflow Steps
-workflow.add_node("research_step", research_task)
-workflow.add_node("seo_step", seo_optimization_task)
-workflow.add_node("writing_step", content_writing_task)
-# workflow.add_node("refine_content", refine_content)
-# workflow.add_node("evaluate_content_quality", evaluate_content_quality)
-# workflow.add_edge("refine_content", "evaluate_content_quality")
-# ✅ Define Transitions
-workflow.set_entry_point("research_step")
-workflow.add_edge("research_step", "seo_step")
-workflow.add_edge("seo_step", "writing_step")
-# workflow.add_edge("writing_step", "refine_content")
-# workflow.add_conditional_edges(
-# "evaluate_content_quality",
-# lambda state: "refine_content" if state["quality_score"] <= 1 else END,
-# {
-#     "refine_content": "refine_content",
-#     END: END
-# }
-# )
-content_graph = workflow.compile()
-def generate_content(idea: str, company_name: str, services: Dict[str, List[str]], service_area: str) -> Dict:
-    state = content_graph.invoke({
-        "idea": idea,
-        "company_name": company_name,
-        "services": services,
-        "service_area": service_area,
-        "quality_score": 0
-    })
-
-    # Generate content for sub-services
-    individual_service_pages = {}
-    for service, sub_services in services.items():
-        for sub_service in sub_services:
-            sub_service_state = content_graph.invoke({
-                "idea": f"{sub_service} under {service}",
-                "company_name": company_name,
-                "services": {service: [sub_service]},
-                "service_area": service_area,
-                "quality_score": 0
-            })
-            individual_service_pages[sub_service] = sub_service_state["service_page"]
-
-    state["individual_service_page"] = individual_service_pages
+    state["feedback"] = improvements
 
     return state
+def feedback_improvement(state: ContentState) -> ContentState:
+    feedback = state["feedback"]
+    previous_score = state["quality_score"]
+
+    # Previous versions of all pages
+    previous_home_page = state["home_page"]
+    previous_about_us = state["about_us_page"]
+    previous_service_page = state["service_page"]
+    previous_individual_service_page = state["individual_service_page"]
+    previous_service_area_page = state["service_area_page"]
+
+    # Adjusted prompts for refining content
+    prompts = {
+        "refine_home_page_content": f"""
+        You are a **senior UK-based content strategist and conversion copywriter**. Your mission is to **completely refine and enhance** the given Home Page Content so that it **achieves a significantly higher quality score**.
+
+        ### **🚀 Your Objectives:**
+        ✅ **Fix ALL Issues Highlighted in the Feedback Below**
+        ✅ **Upgrade Readability, Persuasiveness, and Professionalism**
+        ✅ **Increase the Quality Score (Currently: {previous_score})**
+        ✅ **Enhance Structure & Engagement**
+        ✅ **Strengthen CTAs & Conversion Elements**
+
+        ### **🔍 Issues in the Previous Version (MUST BE FIXED):**
+        {feedback}
+
+        ### **📜 Previous Home Page Content (Rewrite & Improve):**
+        {previous_home_page}
+
+        **🚀 Your rewrite must be a clear, measurable improvement over the previous version.**
+        Instruction: Do NOT include any explanations, commentary, any code, HTML tags, or introductions.
+        """,
+
+        "refine_about_us_content": f"""
+        You are a **senior UK-based content strategist and brand storyteller**. Your mission is to **completely refine and enhance** the About Us page so it **authentically represents the company's values and credibility**.
+
+        ### **🚀 Your Objectives:**
+        ✅ **Fix ALL Issues Highlighted in the Feedback Below**
+        ✅ **Enhance Brand Storytelling & Authenticity**
+        ✅ **Ensure a Compelling and Trustworthy Narrative**
+        ✅ **Improve Readability, Flow, and Engagement**
+        ✅ **Increase the Quality Score (Currently: {previous_score})**
+
+        ### **🔍 Issues in the Previous Version (MUST BE FIXED):**
+        {feedback}
+
+        ### **📜 Previous About Us Page Content (Rewrite & Improve):**
+        {previous_about_us}
+
+        **🚀 Your rewrite must be a clear, measurable improvement over the previous version.**
+        Instruction: Do NOT include any explanations, commentary, any code, HTML tags, or introductions.
+        """,
+
+        "refine_service_page_content": f"""
+        You are a **senior UK-based content strategist and SEO specialist**. Your mission is to **completely refine and enhance** the Service Page Content to make it **highly engaging, clear, and optimized for conversions**.
+
+        ### **🚀 Your Objectives:**
+        ✅ **Fix ALL Issues Highlighted in the Feedback Below**
+        ✅ **Improve Service Descriptions & Benefits**
+        ✅ **Enhance Readability, Clarity, and SEO Optimization**
+        ✅ **Increase the Quality Score (Currently: {previous_score})**
+        ✅ **Strengthen CTAs & User Engagement**
+
+        ### **🔍 Issues in the Previous Version (MUST BE FIXED):**
+        {feedback}
+
+        ### **📜 Previous Service Page Content (Rewrite & Improve):**
+        {previous_service_page}
+
+        **🚀 Your rewrite must be a clear, measurable improvement over the previous version.**
+        Instruction: Do NOT include any explanations, commentary, any code, HTML tags, or introductions.
+        """,
+
+        "refine_individual_service_page_content": f"""
+        You are a **senior UK-based service page specialist and conversion copywriter**. Your mission is to **refine and enhance** this Individual Service Page so that it **clearly communicates value and drives conversions**.
+
+        ### **🚀 Your Objectives:**
+        ✅ **Fix ALL Issues Highlighted in the Feedback Below**
+        ✅ **Clarify Service Benefits and Unique Selling Points**
+        ✅ **Enhance Readability, Trustworthiness, and Persuasion**
+        ✅ **Increase the Quality Score (Currently: {previous_score})**
+        ✅ **Optimize for SEO and Engagement**
+
+        ### **🔍 Issues in the Previous Version (MUST BE FIXED):**
+        {feedback}
+
+        ### **📜 Previous Individual Service Page Content (Rewrite & Improve):**
+        {previous_individual_service_page}
+
+        **🚀 Your rewrite must be a clear, measurable improvement over the previous version.**
+        Instruction: Do NOT include any explanations, commentary, any code, HTML tags, or introductions.
+        """,
+
+        "refine_service_area_page_content": f"""
+        You are a **senior UK-based content strategist and local SEO specialist**. Your mission is to **completely refine and enhance** the Service Area Page Content so that it **attracts and converts local customers effectively**.
+
+        ### **🚀 Your Objectives:**
+        ✅ **Fix ALL Issues Highlighted in the Feedback Below**
+        ✅ **Make Location-Specific Content More Engaging**
+        ✅ **Ensure Clear and Persuasive Messaging**
+        ✅ **Improve SEO Optimization for Local Search**
+        ✅ **Increase the Quality Score (Currently: {previous_score})**
+
+        ### **🔍 Issues in the Previous Version (MUST BE FIXED):**
+        {feedback}
+
+        ### **📜 Previous Service Area Page Content (Rewrite & Improve):**
+        {previous_service_area_page}
+
+        **🚀 Your rewrite must be a clear, measurable improvement over the previous version.**
+        Instruction: Do NOT include any explanations, commentary, any code, HTML tags, or introductions.
+        """
+    }
+    # Invoke LLM for refinement on all pages
+    refined_pages = {key: llm.invoke(prompt).content.strip() for key, prompt in prompts.items()}
+
+    # Update state with refined content
+    state.update({
+        "home_page": refined_pages["refine_home_page_content"],
+        "about_us_page": refined_pages["refine_about_us_content"],
+        "service_page": refined_pages["refine_service_page_content"],
+        "individual_service_page": refined_pages["refine_individual_service_page_content"],
+        "service_area_page": refined_pages["refine_service_area_page_content"],
+    })
+
+    return state
+def create_content_workflow():
+    
+    workflow =  StateGraph(ContentState)
+
+    # ✅ Define Nodes
+    workflow.add_node("research_step", research_task)
+    workflow.add_node("seo_step", seo_optimization_task)
+    workflow.add_node("writing_step", content_writing_task)
+    workflow.add_node("refine_content", refine_content)
+    workflow.add_node("evaluate_content_quality", evaluate_content_quality)
+    workflow.add_node("feedback_improvement", feedback_improvement)  # New Node
+
+    # ✅ Define Transitions
+    workflow.set_entry_point("research_step")
+    workflow.add_edge("research_step", "seo_step")
+    workflow.add_edge("seo_step", "writing_step")
+    workflow.add_edge("writing_step", "refine_content")
+    workflow.add_edge("refine_content", "evaluate_content_quality")
+
+    # Conditional Flow for Quality Check
+    workflow.add_conditional_edges(
+        "evaluate_content_quality",
+        lambda state: "feedback_improvement" if state["quality_score"] <= 2 else END,
+        {
+            "feedback_improvement": "feedback_improvement",
+            END: END
+        }
+    )
+
+    # ✅ Add Loopback from feedback_improvement to refine_content
+    workflow.add_edge("feedback_improvement", "evaluate_content_quality")
+    compile = workflow.compile() 
+    # ✅ Compile the Graph
+    return compile

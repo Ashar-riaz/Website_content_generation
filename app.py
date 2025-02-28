@@ -1,65 +1,77 @@
 import streamlit as st
-from utils import generate_content
+import requests
+import json
+
+# FastAPI endpoint
+API_URL = "http://127.0.0.1:8000/generate-contentsd/"  # Change to your actual FastAPI URL
 
 st.title("Website Content Generator")
 
+# User Inputs
+idea = st.text_input("Enter Business Idea", "Solar Energy Solutions")
 company_name = st.text_input("Enter Company Name", "GreenTech Solar")
-idea = st.text_area("Enter Business Idea", "Solar Energy Solutions")
-service_area_input = st.text_area("Enter Service Areas (comma-separated)", "Exmouth, Newton Abbot, Teignmouth, Taunton")
 
-# Convert service_area input into a list
-service_areas = [city.strip() for city in service_area_input.split(",") if city.strip()]
-
-# 🔹 Services with Sub-services Input
-st.subheader("Enter Services & Sub-services")
-
+st.subheader("Services")
 services = {}
-num_services = st.number_input("Number of Services", min_value=1, value=1, step=1)
+num_services = st.number_input("How many main services?", min_value=1, max_value=10, value=1)
+
 for i in range(num_services):
-    service_name = st.text_input(f"Service {i+1} Name", f"Service {i+1}")
+    service_name = st.text_input(f"Service {i+1} Name", key=f"service_{i}")
+    sub_services = st.text_area(f"Sub-services for {service_name} (comma-separated)", key=f"sub_service_{i}")
+    if service_name:
+        services[service_name] = [s.strip() for s in sub_services.split(",") if s.strip()]
 
-    num_sub_services = st.number_input(f"Number of Sub-services for {service_name}", min_value=1, value=1, step=1)
-    sub_services = [st.text_input(f"Sub-service {j+1} for {service_name}", f"Sub-service {j+1}") for j in range(num_sub_services)]
+st.subheader("Service Areas")
+service_areas = st.text_area("Enter service areas (comma-separated)", "London, Manchester, Birmingham")
+service_areas_list = [area.strip() for area in service_areas.split(",") if area.strip()]
 
-    services[service_name] = sub_services
-
-# 🔹 Service Area-wise Sub-service Selection
-st.subheader("Assign Sub-services to Each City")
+st.subheader("Service Area Services")
 service_area_services = {}
-
-for city in service_areas:
-    st.subheader(f"Sub-services for {city}")
-
-    city_services = {}
-    
-    for service, sub_services in services.items():
-        selected_sub_services = st.multiselect(
-            f"Select sub-services for {service} in {city}",
-            sub_services,  # Show sub-services in dropdown
-            key=f"{city}_{service}"
-        )
-        if selected_sub_services:
-            city_services[service] = selected_sub_services  # Store only selected sub-services
-
-    service_area_services[city] = city_services  # Store city-wise service mapping
-
+for area in service_areas_list:
+    service_area_services[area] = {}
+    for service in services.keys():
+        sub_services_area = st.text_area(f"{area} - Sub-services for {service} (comma-separated)", key=f"{area}_{service}")
+        service_area_services[area][service] = [s.strip() for s in sub_services_area.split(",") if s.strip()]
+# Submit button
 if st.button("Generate Content"):
-    with st.spinner("Generating content... Please wait ⏳"):
-        content = generate_content(idea, company_name, services, service_area_services)
+    # Prepare the request payload
+    payload = {
+        "idea": idea,
+        "company_name": company_name,
+        "services": services,
+        "service_area": service_areas_list,
+        "service_area_services": service_area_services
+    }
 
-    st.success("Content generated successfully!")
+    # Send request to FastAPI
+    try:
+        response = requests.post(API_URL, json=payload)
+        if response.status_code == 200:
+            data = response.json()
+            st.success("Content Generated Successfully!")
+            st.write("API Response:", data)
 
-    # Display content
-    st.subheader("Home Page")
-    st.markdown(content["home_page"].content)
-    
-    st.subheader("About Us Page")
-    st.markdown(content["about_us_page"].content)
-    
-    st.subheader("Service Page")
-    st.markdown(content["service_page"].content)
+            st.subheader("Home Page")
+            st.write(data.get("home_page", "Not available"))
+            
+            st.subheader("About Us Page")
+            st.write(data.get("about_us_page", "Not available"))
+            
+            st.subheader("Service Page")
+            st.write(data.get("service_page", "Not available"))
 
-    st.subheader("Individual Service Pages")
-    for sub_service, text in content["individual_service_pages"].items():
-        st.markdown(f"### {sub_service}")
-        st.markdown(text)
+            st.subheader("🔹 Individual Service Pages")
+
+            individual_service_page = data.get("individual_service_page", "")
+            if individual_service_page:
+                st.markdown(individual_service_page)  # Display Markdown content
+
+            st.subheader("🌍 Service Area Page")
+            service_area_page = data.get("service_area_page", "")
+            if service_area_page:
+                st.markdown(service_area_page)  # Display Markdown content
+
+            
+    except requests.exceptions.RequestException as e:
+        st.error(f"Request failed: {e}")
+
