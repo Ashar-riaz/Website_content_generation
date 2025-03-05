@@ -5,7 +5,7 @@ from langgraph.graph import END
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.tools import DuckDuckGoSearchRun
 from langgraph.graph import StateGraph
-from typing import Dict, List
+from typing import Dict, List,Any
 # ✅ Set Google Gemini API Key
 os.environ["GOOGLE_API_KEY"] = "AIzaSyA6ks9hQCb29yaaEBs2XQXrPK86vrMhhG8"
 # ✅ Initialize Google Gemini Model
@@ -317,26 +317,27 @@ def content_writing_task(state: ContentState) -> ContentState:
                 """,
 
 "service_area_page": f"""
-Show the subservices according to the chosen service area.
-
-For each service in {formatted_result}, follow this structure, ensuring the tone is professional, engaging, and informative.
-
----
-{city}
-
-### {value} in {city}
-- Write a compelling introduction about this subservice, highlighting why it is important and beneficial for customers in {city}. Explain its key features and how it solves a problem.
-
-- Provide additional details, such as the expertise of the team, the quality of service, or any guarantees. Ensure the content is specific, informative, and valuable to the customer.
-
-- If applicable, mention any unique aspects of this service in {city}, such as compliance with local regulations, availability, or special offers.
-
-- Ensure each subservice follows the same format while maintaining natural variations in wording.
-- shown in a paragraph. The heading should be the service name and then the paragraph should be the service description.
-- [Provide details about the second subservice, explaining its benefits and relevance to customers in {city}.]
----
-- Show all the results.
-please not provide a code and html tag.
+                    Show the subservices according to the chosen service area.
+                    
+                    For each service in {formatted_result}, follow this structure, ensuring the tone is professional, engaging, and informative.
+                    
+                    ---
+                    {city}
+                    
+                    ### {value} in {city}
+                    - Write a compelling introduction about this subservice, highlighting why it is important and beneficial for customers in {city}. Explain its key features and how it solves a problem.
+                    
+                    - Provide additional details, such as the expertise of the team, the quality of service, or any guarantees. Ensure the content is specific, informative, and valuable to the customer.
+                    
+                    - If applicable, mention any unique aspects of this service in {city}, such as compliance with local regulations, availability, or special offers.
+                    
+                    - Ensure each subservice follows the same format while maintaining natural variations in wording.
+                    - shown in a paragraph. The heading should be the service name and then the paragraph should be the service description.
+                    - [Provide details about the second subservice, explaining its benefits and relevance to customers in {city}.]
+                    ---
+                    - Show all the results.
+                    If the subservices in not slected then not show the page of area.
+                    please not provide a code and html tag.
 """
 
 }
@@ -869,26 +870,29 @@ def create_content_workflow():
     workflow.add_node("refine_content", refine_content)
     workflow.add_node("evaluate_content_quality", evaluate_content_quality)
     workflow.add_node("feedback_improvement", feedback_improvement)  # New Node
-
+    workflow.add_node("human_review", lambda state: state)  # Human-in-the-loop review
     # ✅ Define Transitions
     workflow.set_entry_point("research_step")
     workflow.add_edge("research_step", "seo_step")
     workflow.add_edge("seo_step", "writing_step")
     workflow.add_edge("writing_step", "refine_content")
     workflow.add_edge("refine_content", "evaluate_content_quality")
-
-    # Conditional Flow for Quality Check
+    
+    # Conditional Flow for Quality Check & Human Review
     workflow.add_conditional_edges(
         "evaluate_content_quality",
-        lambda state: "feedback_improvement" if state["quality_score"] <= 2 else END,
+        lambda state: "feedback_improvement" if state["quality_score"] <= 7 else "human_review",
         {
             "feedback_improvement": "feedback_improvement",
-            END: END
+            "human_review": "human_review"
         }
     )
-
+    
     # ✅ Add Loopback from feedback_improvement to refine_content
     workflow.add_edge("feedback_improvement", "evaluate_content_quality")
+    
+    # ✅ Add Human-in-the-loop approval before finalization
+    workflow.add_edge("human_review", END)
     compile = workflow.compile() 
     # ✅ Compile the Graph
     return compile

@@ -1,6 +1,6 @@
 import streamlit as st
 import json
-from main import generate_content  # Import the function directly
+from main import generate_content, update_page  # Import the functions
 
 st.title("Website Content Generator")
 
@@ -30,9 +30,16 @@ for area in service_areas_list:
         sub_services_area = st.text_area(f"{area} - Sub-services for {service} (comma-separated)", key=f"{area}_{service}")
         service_area_services[area][service] = [s.strip() for s in sub_services_area.split(",") if s.strip()]
 
-# Submit button
+# Initialize session state for content storage
+if "content" not in st.session_state:
+    st.session_state["content"] = {}
+
+if "history" not in st.session_state:
+    st.session_state["history"] = {}
+
+
+# Generate Content
 if st.button("Generate Content"):
-    # Prepare the request payload
     payload = {
         "idea": idea,
         "company_name": company_name,
@@ -41,29 +48,75 @@ if st.button("Generate Content"):
         "service_area_services": service_area_services
     }
 
-    # Call the function directly instead of making an API request
     try:
         data = generate_content(payload)
         st.success("Content Generated Successfully!")
 
-        st.subheader("Home Page")
-        st.write(data.get("home_page", "Not available"))
-        
-        st.subheader("About Us Page")
-        st.write(data.get("about_us_page", "Not available"))
-        
-        st.subheader("Service Page")
-        st.write(data.get("service_page", "Not available"))
-
-        st.subheader("🔹 Individual Service Pages")
-        individual_service_page = data.get("individual_service_page", "")
-        if individual_service_page:
-            st.markdown(individual_service_page)
-
-        st.subheader("🌍 Service Area Page")
-        service_area_page = data.get("service_area_page", "")
-        if service_area_page:
-            st.markdown(service_area_page)
+        # Store generated content in session state
+        st.session_state["content"] = data
+        st.session_state["history"] = {key: [value] for key, value in data.items()}  # Store first version
 
     except Exception as e:
         st.error(f"Error: {e}")
+
+# User Query for Updating Content
+st.subheader("Update Content")
+user_query = st.text_area("Enter modification request", "")
+
+# Dropdown for selecting the page to update
+available_pages = {
+    "Home Page": "home_page",
+    "About Us Page": "about_us_page",
+    "Service Page": "service_page",
+    "Individual Service Pages": "individual_service_page",
+    "Service Area Page": "service_area_page",
+}
+
+selected_page = st.selectbox("Select the page to update", list(available_pages.keys()))
+
+# Update Content Button
+if st.button("Update Content"):
+    if not user_query.strip():
+        st.warning("Please enter a modification request.")
+    elif "content" not in st.session_state or not st.session_state["content"]:
+        st.warning("Generate content first before updating.")
+    else:
+        try:
+            # Get the current content for the selected page
+            page_key = available_pages[selected_page]
+            current_content = st.session_state["content"].get(page_key, "")
+
+            # Call update_page function
+            updated_page_content = update_page({"page_content": current_content}, user_query)
+
+            # Store the new version in session state
+            if page_key in st.session_state["history"]:
+                st.session_state["history"][page_key].append(updated_page_content["page_content"])
+            else:
+                st.session_state["history"][page_key] = [updated_page_content["page_content"]]
+
+            # Update displayed content
+            st.session_state["content"][page_key] = updated_page_content["page_content"]
+
+            st.success(f"{selected_page} Updated Successfully!")
+
+        except Exception as e:
+            st.error(f"Error: {e}")
+
+# Display all pages with history
+st.subheader("Website Content")
+
+for page, key in available_pages.items():
+    if key in st.session_state["content"]:
+        st.subheader(f"🔹 {page}")
+
+        # Show latest content
+        st.write(st.session_state["content"][key])
+
+        # Show previous versions in an expander
+        if key in st.session_state["history"] and len(st.session_state["history"][key]) > 1:
+            with st.expander("📜 Previous Versions"):
+                for i, old_version in enumerate(reversed(st.session_state["history"][key][:-1])):
+                    st.markdown(f"**Version {len(st.session_state['history'][key]) - i - 1}**")
+                    st.write(old_version)
+                    st.markdown("---")

@@ -1,12 +1,16 @@
 
 from langgraph.graph import END
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Dict, List, Any
 from langgraph.graph import StateGraph
 from service import research_task, seo_optimization_task, content_writing_task, refine_content, evaluate_content_quality, feedback_improvement
+from langchain_google_genai import ChatGoogleGenerativeAI
+
 
 app = FastAPI()
+llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
 class ContentState(Dict):
     idea: str
     company_name: str
@@ -32,23 +36,29 @@ workflow.add_node("writing_step", content_writing_task)
 workflow.add_node("refine_content", refine_content)
 workflow.add_node("evaluate_content_quality", evaluate_content_quality)
 workflow.add_node("feedback_improvement", feedback_improvement)  # New Node
+workflow.add_node("human_review", lambda state: state)  # Human-in-the-loop review
 # ✅ Define Transitions
 workflow.set_entry_point("research_step")
 workflow.add_edge("research_step", "seo_step")
 workflow.add_edge("seo_step", "writing_step")
 workflow.add_edge("writing_step", "refine_content")
 workflow.add_edge("refine_content", "evaluate_content_quality")
-# Conditional Flow for Quality Check
+
+# Conditional Flow for Quality Check & Human Review
 workflow.add_conditional_edges(
     "evaluate_content_quality",
-    lambda state: "feedback_improvement" if state["quality_score"] <= 7 else END,
+    lambda state: "feedback_improvement" if state["quality_score"] <= 7 else "human_review",
     {
         "feedback_improvement": "feedback_improvement",
-        END: END
+        "human_review": "human_review"
     }
 )
+
 # ✅ Add Loopback from feedback_improvement to refine_content
 workflow.add_edge("feedback_improvement", "evaluate_content_quality")
+
+# ✅ Add Human-in-the-loop approval before finalization
+workflow.add_edge("human_review", END)
 # ✅ Compile the Graph
 content_graph = workflow.compile()
 class RequestModel(BaseModel):
@@ -57,12 +67,9 @@ class RequestModel(BaseModel):
     services: Dict[str, List[str]]
     service_area: List[str]
     service_area_services: Dict[str, Dict[str, List[str]]]
-
-from fastapi import FastAPI
-from fastapi.responses import JSONResponse
-
-
-
+class UpdateRequest(BaseModel):
+    page_key: List[str]
+    user_query: str   
 def generate_content(data):  # Remove @app.post to make it an importable function
     state = content_graph.invoke({
         "idea": data["idea"],
@@ -83,5 +90,33 @@ def generate_content(data):  # Remove @app.post to make it an importable functio
     
     return response  # Return dictionary instead of JSONResponse
 
+@app.put("/update-page/")
+def update_page(state: dict, user_query: str):
+    """
+    Updates the selected page content based on user feedback.
+    """
+    current_content = state.get("page_content", "")
+
+    # Define the prompt for updating the content
+    prompt = f"""You are an expert content editor. Modify the content according to this exact request: {user_query}. 
+
+    - If the request asks to remove specific text, completely delete it while keeping the content natural and professional.
+    - If the request involves replacing text, swap it exactly as instructed.
+    - Do not add explanations, comments, formatting hints, or additional modifications—only return the updated version of the content.
+    - Ensure that only the requested changes are made. Do not include the previous version or additional variations.
+    
+    Here is the content before modification:
+    ---
+    {current_content}
+    ---
+
+    Return only the fully updated content without any extra details.
+    """
+
+    # Call Gemini to process the update
+    updated_content = llm.invoke(prompt).content.strip()
+
+    # Ensure the modified content is updated correctly
+    return {"page_content": updated_content}
 
   
