@@ -76,7 +76,6 @@ def generate_content(data):  # Remove @app.post to make it an importable functio
         "company_name": data["company_name"],
         "services": data["services"],
         "service_area": data["service_area"],
-        "service_area_services": data["service_area_services"],
         "quality_score": 0
     })
 
@@ -102,6 +101,7 @@ def update_page(state: dict, user_query: str):
 
     - If the request asks to remove specific text, completely delete it while keeping the content natural and professional.
     - If the request involves replacing text, swap it exactly as instructed.
+    - If the request requires rewording, refine the text while keeping the meaning intact.
     - Do not add explanations, comments, formatting hints, or additional modifications—only return the updated version of the content.
     - Ensure that only the requested changes are made. Do not include the previous version or additional variations.
     
@@ -111,6 +111,7 @@ def update_page(state: dict, user_query: str):
     ---
 
     Return only the fully updated content without any extra details.
+    and update only the content that needs to be changed and shown with all content.
     """
 
     # Call Gemini to process the update

@@ -55,33 +55,16 @@ def content_writing_task(state: ContentState) -> ContentState:
     services = "\n".join(f"- {service}" for service in state["services"])
     main_services = list(state["services"].keys())  # Extract main service names
     main_services_str = "\n".join(f"- {service}" for service in main_services)  # Format for readability
-
-# Extract only subservices
     services_list = [
         subservice
         for main_service, subservices in state["services"].items()
         for subservice in subservices
     ]
 
-# Convert to bullet points
-    # services = "\n".join(f"- {sub}" for sub in services_list)
     service_area = "\n".join(f"- {area}" for area in state["service_area"])
     company_name=state["company_name"]
-    service_area_services=state["service_area_services"]
-
-
-    result = []
-    for city, services in service_area_services.items():
-        for value_list in services.values():
-            for value in value_list:
-                result.append((city, value))
-    formatted_result = ""
-    for city, services in service_area_services.items():
-        subservices = "\n    ".join([value for value_list in services.values() for value in value_list])
-        formatted_result += f"# **SERVICE AREA NAME `{city}`**\n    name of the subservices\n    {subservices}\n\n"
-
     prompts = {
-    "home_page": f"""You are an expert web content writer specializing in **SEO-optimized, high-converting website copy**. Your task is to write a compelling **Home Page** for a company named **{company_name}**, which provides **{services}**. Your writing should be persuasive, well-structured, and engaging while maintaining a clear, informative tone.
+            "home_page": f"""You are an expert web content writer specializing in **SEO-optimized, high-converting website copy**. Your task is to write a compelling **Home Page** for a company named **{company_name}**, which provides **{services}**. Your writing should be persuasive, well-structured, and engaging while maintaining a clear, informative tone.
 
               ### **Key Requirements:**
 
@@ -135,9 +118,9 @@ def content_writing_task(state: ContentState) -> ContentState:
               {seo_data}
 
               Ensure the content is persuasive, engaging, and easy to read. Keep paragraphs short and **use bullet points for clarity when needed**. Your writing should feel **professional yet approachable**, with a strong focus on **conversion and engagement**.
-              please not provide a code and html tag.
+              please not provide a code and html tag and not add a colon in the center of the sentence.
               """,
-"about_us_page": f"""You are an expert web content writer skilled in crafting **engaging, structured, and customer-focused About Us pages**.
+ "about_us_page": f"""You are an expert web content writer skilled in crafting **engaging, structured, and customer-focused About Us pages**.
                 Write a professional and compelling **About Us** page for **{company_name}**, a trusted provider of **{services}**. The content must be well-structured, engaging, and clearly communicate the company’s mission, services, and coverage areas.
 
                 ### **Key Requirements:**
@@ -183,179 +166,177 @@ def content_writing_task(state: ContentState) -> ContentState:
                 please not provide a code and html tag.
                 """,
 
-"service_page": f"""You are a professional web content strategist and expert copywriter.
-                Create a **well-structured, engaging, and customer-focused service page** for {company_name}.
-                Ensure that **each main service has its own heading**, with **detailed descriptions of all corresponding subservices** underneath in a structured format.
+    "service_page": f"""You are a professional web content strategist and expert copywriter.
+              Create a **well-structured, engaging, and customer-focused service page** for {company_name}.
+              Ensure that **each main service has its own heading**, with **detailed descriptions of all corresponding subservices** underneath in a structured format.
 
-                ---
+              ---
 
-                ### **Key Requirements:**
+              ### **Key Requirements:**
 
-                #### **1. Headline & Introduction**
-                - Start with a **strong, engaging headline** introducing the main service category.
-                - Provide a **concise yet compelling introduction**, highlighting why this service is important and how it benefits customers.
+              #### **1. Headline & Introduction**
+              - Start with a **strong, engaging headline** introducing the main service category.
+              - Provide a **concise yet compelling introduction**, highlighting why this service is important and how it benefits customers.
 
-                #### **2. Service Breakdown (Main Services & Corresponding Subservices)**
-                - Each **main service** from `{main_services_str}` should be displayed as a heading add a (Page):
-                  - **Format:** `## Main Service Name`
-                - Each **subservice** from `{services}` should be listed under the correct **main service**:
-                  - **Format:** `### Subservice Name`
-                  - **Followed by a short description** explaining its benefits.
-                - **Maintain the exact structure of main and subservices as provided.**
+              #### **2. Service Breakdown (Main Services & Corresponding Subservices)**
+              - Each **main service** from `{main_services_str}` should be displayed as a heading, followed by a structured description.
+                - **Format:** `## Main Service Name`
+              - Each **subservice** from `{services}` should be described thoroughly underneath its corresponding main service:
+                - **Format:** `### Subservice Name`
+                - **Include a full, well-structured description** that explains the service, its purpose, benefits, and any unique value it offers to customers.
 
-                #### **Example Format:**
+              #### **Example Format:**
 
-                ## **Main service Page**
-                At {company_name}, we provide expert solar panel installation services designed to maximize energy efficiency and savings. Our goal is to make solar energy accessible and affordable, ensuring that your home or business benefits from clean and sustainable power.
+              ## Solar Panel Installation**
+              At {company_name}, we provide expert solar panel installation services designed to maximize energy efficiency and savings. Our goal is to make solar energy accessible and affordable, ensuring that your home or business benefits from clean and sustainable power.
 
-                ### **subservice1**
-                Our professional team installs high-quality solar panels that are tailored to your property's needs. We assess your location, energy consumption, and budget to create an optimal solar solution that maximizes savings and efficiency.
+              ### **High-Quality Solar Panels Installed**
+              We offer premium-grade solar panels tailored to your property's energy needs. Our experts assess your location, energy consumption, and budget to create an optimal solar solution that maximizes savings and efficiency.
 
-                ### **subservice2**
-                We provide comprehensive maintenance services to keep your solar system operating at peak performance. This includes panel inspections, cleaning, and system diagnostics to ensure longevity and efficiency.
+              ### **Professional System Maintenance**
+              Regular maintenance is essential for ensuring the longevity and performance of your solar energy system. Our team conducts thorough inspections, panel cleaning, and system diagnostics to maintain efficiency and extend the life of your investment.
 
-                ### **subservice3**
-                If your solar panels or inverters develop faults, our skilled technicians offer prompt repair services to restore functionality. Whether it's wiring issues, faulty components, or system inefficiencies, we quickly diagnose and fix the problem.
+              ### **Fast and Reliable Repairs**
+              If your solar panels or inverters develop faults, our skilled technicians provide prompt repair services to restore functionality. We quickly diagnose issues such as wiring problems, faulty components, and system inefficiencies, ensuring your system operates at peak performance.
 
-                ### **subservice4**
-                Our solar consultation services include expert advice on the best solar solutions for your property. We conduct site evaluations, financial analysis, and system design planning to ensure that your investment yields the best results.
+              ### **Expert Solar Consultation**
+              Not sure which solar solution is best for your property? Our consultation services include detailed site evaluations, financial feasibility studies, and customized system design recommendations to help you make the best investment decision.
 
-                and more if there are additional subservices...
+              ---
 
-                ---
+              ## Electrical Wiring**
+              Proper wiring ensures your solar power system functions safely and efficiently. At {company_name}, we provide expert electrical wiring services to guarantee seamless energy distribution from your solar panels to your home or business.
 
-                ## **Main service** Page
-                Proper wiring ensures your solar power system functions safely and efficiently. At {company_name}, we provide expert electrical wiring services to guarantee seamless energy distribution from your solar panels to your home or business.
+              ### **Fixed Wiring Solutions**
+              Our professional team offers high-quality fixed wiring solutions designed for maximum stability and efficiency. We ensure compliance with industry safety standards and optimal electrical performance for your solar system.
 
-                ### **subservice1**
-                We offer fixed wiring solutions that enhance the stability and reliability of your solar energy system. Our professional installations ensure compliance with safety standards and optimal electrical performance.
+              ### **New Wiring Installations**
+              If your current electrical setup is outdated or inadequate for your solar energy needs, we provide new wiring installations that improve energy flow and ensure seamless connectivity between components.
 
-                ### **subservice2**
-                If your current electrical wiring is outdated or inadequate for your solar energy needs, we provide new wiring solutions that optimize energy flow and improve overall system efficiency.
+              ---
 
-                and more if there are additional subservices...
+              #### **3. Service Process Overview**
+              - Provide a **clear, step-by-step breakdown** of how the service is delivered.
+              - Keep it **simple, engaging, and informative**.
 
-                ---
-                and more if there are additional service...
+              #### **4. Call to Action (CTA)**
+              - End with a **strong, persuasive CTA**, such as:
+                - **"Contact us today for a free consultation!"**
+                - **"Book your service now and enjoy hassle-free solar solutions."**
 
-                #### **3. Service Process Overview**
-                - Provide a **clear, step-by-step breakdown** of how the service is delivered.
-                - Keep it **simple, engaging, and informative**.
+              #### **5. SEO Optimization & Readability**
+              - Ensure content is **SEO-optimized** for better search rankings.
+              - Use **concise paragraphs, bullet points, and subheadings** for easy reading.
 
-                #### **4. Call to Action (CTA)**
-                - End with a **strong, persuasive CTA**, such as:
-                  - **"Contact us today for a free consultation!"**
-                  - **"Book your service now and enjoy hassle-free solar solutions."**
+              #### **6. Adaptability**
+              - **Do not mention specific locations unless required.**
+              - **Use this research:** {research_data}
+              - **Apply these SEO best practices:** {seo_data}
 
-                #### **5. SEO Optimization & Readability**
-                - Ensure content is **SEO-optimized** for better search rankings.
-                - Use **concise paragraphs, bullet points, and subheadings** for easy reading.
+              The content must be **engaging, structured, and persuasive**, ensuring customers can easily navigate and understand your services.
 
-                #### **6. Adaptability**
-                - **Do not mention specific locations unless required.**
+              ---
+              Please do not provide code or HTML tags.
+              """,
 
-                - **Use this research:** {research_data}
-                - **Apply these SEO best practices:** {seo_data}
-
-                The content must be **engaging, structured, and persuasive**, ensuring customers can easily navigate and understand your services.
-
-                ---
-                please not provide a code and html tag.
-                """,
-"individual_service_page": f"""
-                Instruction: Generate high-quality, human-like content for each of the following services: `{services_list}`.
-
+    "individual_service_page": f"""
                 Each service listed below must have its **own dedicated page** with content that is **specific to that subservice**. **Ensure that a response is generated for every subservice** without skipping any.
 
-                **📌 Important Instructions:**
-                - Generate **a full separate response for each subservice** in `{services_list}`.
-                - Do **not** skip any subservice.
-                - Do **not** mix content between subservices.
-                - The content must be **unique for each subservice** and **not generic**.
-                - Maintain a **consistent format** and ensure high-quality, structured writing.
-                - The output must include **every subservice in the input list**.
+            **📌 Important Instructions:**
+            - Generate **a full separate response for each subservice** in `{services_list}`.
+            - Do **not** skip any subservice.
+            - Do **not** mix content between subservices.
+            - The content must be **unique for each subservice** and **not generic**.
+            - Maintain a **consistent format** and ensure high-quality, structured writing.
+            - The output must include **every subservice in the input list**.
 
-                ---
+            ---
 
-                🔹 **For each subservice in `{services_list}`, use the following structure:**
+            🔹 **For each subservice in `{services_list}`, use the following structure:**
 
-                ---
+            ---
 
-                ### **[Subservice Name]**
+            ### **[Subservice Name]**
 
-                #### **Introduction**
-                - Provide an engaging introduction that explains the importance of `[Subservice Name]`.
-                - Mention why it is relevant for customers.
+            #### **Trusted [Subservice Name] Experts**
+            - Provide a compelling introduction emphasizing expertise and trustworthiness.
+            - Mention the experience and commitment to customer satisfaction.
 
-                #### **What is [Subservice Name]?**
-                - Define `[Subservice Name]` in simple terms.
-                - Explain how it works and why it is necessary.
-                - Ensure the content is **exclusive to this subservice**.
+            #### **What is [Subservice Name]?**
+            - Define `[Subservice Name]` clearly and concisely.
+            - Explain how it works and why it is beneficial.
+            - Ensure the explanation is **exclusive to this subservice**.
 
-                #### **Key Benefits of [Subservice Name]**
-                - List the main benefits of this specific service.
-                - Explain how customers will benefit from choosing this service.
-                - Use **bullet points** for clarity.
+            #### **Why Choose Our [Subservice Name] Services?**
+            - List reasons why customers should trust your services.
+            - Highlight experience, qualifications, and customer-centric approach.
+            - Use **bullet points** for clarity.
 
-                #### **Signs You Need [Subservice Name] (if applicable)**
-                - Provide a list of signs that indicate when this service is needed.
-                - Keep it **directly relevant** to this service.
+            #### **Key Benefits of [Subservice Name]**
+            - List the main benefits of this specific service.
+            - Explain how customers will benefit from choosing this service.
+            - Use **bullet points** for clarity.
 
-                #### **Call to Action**
-                - End with a strong **Call to Action (CTA)**, encouraging visitors to **book, contact, or request a quote**.
-                - Include a **phone number, email, or link** for immediate action.
+            #### **Signs You Need [Subservice Name] (if applicable)**
+            - Provide a list of signs that indicate when this service is needed.
+            - Keep it **directly relevant** to this service.
 
-                ---
+            #### **How Our [Subservice Name] Process Works**
+            - Describe the process step by step in an easy-to-understand manner.
+            - Ensure clarity and professionalism.
 
-                **📌 Final Reminder:**
-                ✅ **Generate content for every subservice** listed in `{services_list}`.
-                ✅ Do **not** generate only one or a few subservices; all must be included.
-                ✅ Keep responses **structured, engaging, and informative**.
-                ✅ Maintain a **professional yet persuasive** tone.
-                ✅ Ensure **SEO-friendly** and **human-like writing**.
-                  please not provide a code and html tag.
-                """,
+            #### **Call to Action**
+            - End with a strong **Call to Action (CTA)**, encouraging visitors to **book, contact, or request a quote**.
+            - Include a **phone number, email, or link** for immediate action.
+
+            ---
+
+            **📌 Final Reminder:**
+            ✅ **Generate content for every subservice** listed in `{services_list}`.
+            ✅ Do **not** generate only one or a few subservices; all must be included.
+            ✅ Keep responses **structured, engaging, and informative**.
+            ✅ Maintain a **professional yet persuasive** tone.
+            ✅ Ensure **SEO-friendly** and **human-like writing**.
+            ✅ Do **not** include any code or HTML tags.
+            """,
 
 "service_area_page": f"""
-Show the subservices according to the chosen service area.
+                    Generate a detailed and engaging service area page for {service_area}.
 
-For each service in {formatted_result}, follow this structure, ensuring the tone is professional, engaging, and informative.
+                    For each service in {services_list}, follow this structured format:
 
----
-{city}
+                    ---
+                    {service_area}
 
-### {value} in {city}
-- Write a compelling introduction about this subservice, highlighting why it is important and beneficial for customers in {city}. Explain its key features and how it solves a problem.
+                    ### [Unique, keyword-rich heading including the service name and {service_area}]
+                    Write a compelling introduction about this service, explaining its importance and benefits for customers in {service_area}. Highlight key features and how it addresses specific needs.
 
-- Provide additional details, such as the expertise of the team, the quality of service, or any guarantees. Ensure the content is specific, informative, and valuable to the customer.
+                    Provide additional details, such as the expertise of the team, service quality, and any guarantees. Ensure the content is informative, specific, and valuable to the reader.
 
-- If applicable, mention any unique aspects of this service in {city}, such as compliance with local regulations, availability, or special offers.
+                    Mention any unique aspects of this service in {service_area}, such as compliance with local regulations, availability, or exclusive offers.
 
-- Ensure each subservice follows the same format while maintaining natural variations in wording.
-- shown in a paragraph. The heading should be the service name and then the paragraph should be the service description.
-- [Provide details about the second subservice, explaining its benefits and relevance to customers in {city}.]
----
-- Show all the results.
-please not provide a code and html tag.
-"""
+                    Maintain a natural variation in wording while keeping the format consistent across all services. Each service description should be in paragraph form, with the service name as the heading followed by the description.
 
+                    Ensure all services are displayed in full.
+                    """
 }
-    pages = {key: llm.invoke(prompt).content for key, prompt in prompts.items()}
+    pages = {key: llm.invoke(prompt) for key, prompt in prompts.items()}
     state.update(pages)
     print("content_done")
-
     return state
 
-
 def refine_content(state: ContentState) -> ContentState:
+    company_name=state["company_name"]
+
     prompts = {
-        "refine_home_page_content": f"""You are an expert UK-based web content writer. Your task is to refine the following **Home Page Content** to match the structure, style, and detail level of top-tier UK service websites. The content should be well-organized, highly detailed, and formatted professionally.
+        "home_page": f"""You are an expert UK-based web content writer. Your task is to refine the following **Home Page Content** to match the structure, style, and detail level of top-tier UK service websites. The content should be well-organized, highly detailed, and formatted professionally.
         ---
 
         ### **Few-Shot Examples of Desired Structure (UK-Specific, Highly Detailed)**
 
         #### **Example 1 - Exeter’s Heating Experts**
-        🏡 **Your Trusted Local Heating Specialists** | Providing Gas Boiler Installations & Central Heating Solutions Across Exeter & South Devon
+        🏡 **Your Trusted Local Heating Specialists**
+        | Providing Gas Boiler Installations & Central Heating Solutions Across Exeter & South Devon
 
         🔹 **Professional Boiler Installations – A-rated Efficiency & Reliability**
         At **South Coast Plumbing and Heating**, we specialise in fitting modern **A-rated combi, traditional, and system boilers** from **Viessmann, Worcester Bosch, and Vaillant**—brands known for their exceptional reliability and energy efficiency. Our **Gas Safe registered engineers** ensure that your new boiler is installed safely, efficiently, and in compliance with **UK heating regulations**.
@@ -414,7 +395,7 @@ def refine_content(state: ContentState) -> ContentState:
 
         ### **NOW, Refine the Following Home Page Content to Match These High-Detail Examples:**
 
-        {state["home_page"]}
+        {state["home_page"].content}
 
         ---
 
@@ -426,10 +407,12 @@ def refine_content(state: ContentState) -> ContentState:
         ✅ **Make it SEO-Friendly (Without Being Robotic):** Use relevant keywords naturally, ensuring it reads as **authentic, high-quality website content**.
         ✅ **Focus on Benefits & Trustworthiness:** Clearly outline **why customers should choose this company**, including guarantees, fast response times, expert knowledge, and certifications.
         ✅ **Ensure Content is UK Market-Specific:** Adapt services, pricing models, and customer expectations to fit UK consumer standards.
+        ✅  Do NOT modify punctuation or add extra symbols. Maintain the original punctuation exactly as provided.
+        ✅  Do NOT add colon in the center of the sentence.
 
         Return the improved home page content in a **fully structured, highly detailed, and polished format** suitable for a professional UK service business website.""",
 
-        "refine_about_us_page_content": f""" You are an expert UK-based content writer specializing in home services. Your task is to refine the following **About Us Page Content** for a heating and plumbing company to match the structure, style, and detail level of top-tier UK service websites. The content should be well-organized, informative, and highly professional.
+       "about_us_page": f""" You are an expert UK-based content writer specializing in home services. Your task is to refine the following **About Us Page Content** for a heating and plumbing company to match the structure, style, and detail level of top-tier UK service websites. The content should be well-organized, informative, and highly professional.
         ---
         ### **Few-Shot Examples of Desired Structure (UK-Specific, Highly Detailed)**
 
@@ -478,7 +461,7 @@ def refine_content(state: ContentState) -> ContentState:
 
         ### **NOW, Refine the Following About Us Content to Match These High-Detail Examples:**
 
-        {state["about_us_page"]}
+        {state["about_us_page"].content}
 
         ---
 
@@ -493,143 +476,303 @@ def refine_content(state: ContentState) -> ContentState:
         Return the improved **About Us Page** content in a **fully structured, highly detailed, and polished format** suitable for a professional UK service business website.""",
 
 
-        "refine_service_page": f""" You are an expert in creating **SEO-optimized, highly detailed, and engaging** service pages for business websites.
-         Your task is to **refine the service page content** to make it more structured, comprehensive, and conversion-friendly.
-         ### **Instructions for Refinement:**
-         - **Expand Each Section** – Provide **in-depth descriptions** of the services, including their **benefits and processes**.
-         - **Use Clear Headings & Subheadings** – Structure the content properly for **better readability and SEO**.
-         - **Highlight Key Features with Bullet Points** – Make the information **easy to scan and engaging**.
-         - **Incorporate Persuasive & Actionable Language** – Encourage visitors to **take action** (e.g., **"Get a Free Quote Today!"**).
-         - **Ensure Natural Keyword Integration** – Optimize for **search engines** while keeping it human-friendly.
-         - **Mention the Location Where Relevant** – If the services are location-specific, naturally include city names.
-         ---
 
-         ### **Example of a Structured & Detailed Service Page:**
-         ```
-         ## **Our Expert Plumbing & Heating Services in London**
-         At **South Coast Plumbing & Heating**, we offer a full range of **reliable and high-quality heating and plumbing services** in London. Our experienced, **Gas Safe registered engineers** ensure your home stays warm, safe, and energy-efficient all year round.
 
-         ### **🔹 New Boiler Installation**
-         Looking for a new boiler? We supply and install **high-efficiency A-rated boilers** from top brands like **Worcester Bosch, Vaillant, and Ideal**. Our experts recommend the **best energy-efficient solution** based on your home’s heating needs.
+        "service_page": f""" You are an expert in creating **SEO-optimized, highly detailed, and engaging** service pages for business websites.
+Your task is to **refine the service page content** to make it more structured, comprehensive, and conversion-friendly.
 
-         ✅ Free Consultation & Personalized Advice
-         ✅ Professional Installation with a 10-Year Warranty
-         ✅ Energy-Saving Solutions to Lower Your Bills
+### **Instructions for Refinement:**
+- **Expand Each Section** – Provide **in-depth descriptions** of the services, including their **benefits and processes**.
+- **Use Clear Headings & Subheadings** – Structure the content properly for **better readability and SEO**.
+- **Highlight Key Features with Bullet Points** – Make the information **easy to scan and engaging**.
+- **Incorporate Persuasive & Actionable Language** – Encourage visitors to **take action** (e.g., **"Get a Free Quote Today!"**).
+- **Ensure Natural Keyword Integration** – Optimize for **search engines** while keeping it human-friendly.
+- **Mention the Location Where Relevant** – If the services are location-specific, naturally include city names.
 
-         ### **🔹 Fast & Reliable Boiler Repairs**
-         Experiencing boiler issues? We provide **same-day emergency repairs** for all major brands. Common issues we fix:
+---
 
-         - **No heating or hot water**
-         - **Leaks, pressure drops, and error codes**
-         - **Strange noises or pilot light failures**
+### **Examples of Well-Structured Service Pages:**
 
-         🚀 **Call now for urgent repairs!**
-         ### **🔹 Annual Boiler Servicing**
-         Keep your boiler in **top condition** with our **comprehensive servicing**:
+#### **🔹 Emergency Plumbing Services in Lancashire**
+At **Jaws Gas Services**, we specialize in **fast-response emergency plumbing** across Lancashire, covering areas like **Blackburn, Bolton, Burnley, Preston, and Blackpool**. Our team is available **24/7** to handle urgent plumbing problems.
 
-         - **Safety checks** to prevent carbon monoxide risks
-         - **Cleaning & tuning** for maximum efficiency
-         - **Early fault detection** to avoid costly repairs
+### **Why Choose Our Emergency Plumbing Service?**
+✅ **Rapid Response:** We arrive quickly to prevent further damage.
+✅ **Expert Repairs:** Skilled plumbers with years of experience.
+✅ **Transparent Pricing:** No hidden charges—just fair, upfront costs.
+✅ **Local & Trusted:** A dedicated Lancashire-based team you can rely on.
 
-         🔥 **Book your service today to avoid winter breakdowns!**
-         ---
-         ```
+### **Common Emergency Plumbing Issues We Fix:**
+- **Burst Pipes & Leaks** – We quickly repair and replace damaged pipes.
+- **No Hot Water** – We diagnose and fix heating system failures.
+- **Blocked Drains & Toilets** – Swift solutions to prevent overflow and backups.
 
-         ---
+🚀 **Don't wait—call Jaws Gas Services for emergency plumbing now!**
 
-         ### **Now, refine the following service page content into a highly detailed, structured, and persuasive version like the example above:**
+---
 
-         {state["service_page"]}
+#### **🔹 Professional Boiler Installation in Scotland**
+At **Superior Heat Solutions**, we provide **top-quality boiler installation** services throughout Scotland. Whether you're replacing an old unit or installing a brand-new system, we have the expertise to **fit high-efficiency A-rated boilers** from top manufacturers.
 
-         **Make sure to:**
-         - Expand the details of each section.
-         - Use structured headings and subheadings.
-         - Improve the **clarity, engagement, and persuasiveness** of the content.
-         - Include **strong call-to-action statements**.
-         - Ensure **SEO optimization** with natural keyword integration.
+### **Why Choose Us for Your Boiler Installation?**
+🔥 **Expert Installation:** We fit combi, system, and conventional boilers.
+🔥 **Affordable Pricing:** Competitive rates with flexible finance options.
+🔥 **Energy Efficiency:** Save on heating bills with our A-rated systems.
+🔥 **Hassle-Free Process:** From selection to installation, we handle everything.
 
-         Provide the refined content in a **well-formatted and professional** manner.
+🚀 **Upgrade your heating today—book a free consultation!**
+
+---
+
+### **🔹 Power Flushing Service in Exeter**
+Does your heating system take too long to warm up? Our **power flushing service** removes sludge, rust, and debris to restore your **radiators’ efficiency**.
+
+### **Benefits of Power Flushing:**
+💧 **Improved Heat Distribution:** Say goodbye to cold spots in your home.
+💧 **Lower Energy Bills:** A cleaner system runs more efficiently.
+💧 **Prevents Boiler Damage:** Extends the life of your heating system.
+
+**Starting from just £300**—get in touch today to book your power flush!
+
+---
+
+### **Now, refine the following service page content into a highly detailed, structured, and persuasive version like the examples above:**
+
+{state["service_page"].content}
+
+**Make sure to:**
+- Expand the details of each section.
+- Use structured headings and subheadings.
+- Improve the **clarity, engagement, and persuasiveness** of the content.
+- Include **strong call-to-action statements**.
+- Ensure **SEO optimization** with natural keyword integration.
+- Not Mention any location.
+- All the data shown in a pargraph.
+
+Provide the refined content in a **well-formatted and professional** manner.
+Not give any code and html tags.
+
          """,
 
-        "refine_individual_service_page" : f""" You are an expert at generating professional, structured, and SEO-optimized service pages for a business website.
+"individual_service_page": f"""
+Your **task** is to **rewrite and refine** the given service page content while ensuring that it follows the diverse structures, tones, and formatting of the provided examples.
 
-         Please **rewrite and refine** the following individual service page content using the exact format of the examples provided below.
-         Your response **must strictly follow the same structure, tone, and clarity** as the examples.
-         **Instructions:**
-         - Maintain the **exact headings, formatting, and structure** used in the examples.
-         - Ensure **clarity and professionalism** in the content.
-         - Use **engaging and SEO-friendly language**.
-         - Structure the content with **clear headings, subheadings, and sections**.
-         - Adapt the text while keeping it **relevant to the service and location**.
+### **Instructions**
+- Carefully **analyze the example service pages**—each subservice follows a unique structure.
+- **Do not copy or mix example content into the final output.** The provided examples are for structure reference only.
+- **Do not use bullet points** or repetitive templates. Instead, ensure the content is presented in well-structured paragraphs.
+- Keep the writing **clear, professional, and SEO-friendly**, optimizing for readability and engagement.
+- Structure the content with **logical transitions** between sections while maintaining a natural, narrative flow.
+Is there name use of company name used this name {company_name}.
+Not add any specific area in the content and not add colon in the center of the sentence.
 
-         **Example Format of a Well-Structured Service Page:**
-         ```
-         SERVICE AREAS PAGES
-         Exeter
+---
 
-         Heating Services for Exeter
+### **Example Formats of Well-Structured Service Pages**
+The following examples are for structure reference only. **Do not mix their content into the final response.**
 
-         Whether you need a new boiler, central heating installation, power flushing service, or boiler repair, our Gas Safe engineers are here to ensure your home stays warm and comfortable. South Coast Plumbing and Heating covers Exeter and provides a complete range of services for Natural Gas and oil boilers.
+#### **Example 1:
+Oil Boilers Page**
+- Trusted Oil Boiler Installation Experts
 
-         New Boilers Installed in Exeter
-         Are you looking to upgrade to a new, energy-efficient boiler in Exeter? We supply and install A-rated gas and oil boilers from leading manufacturers. Our experienced gas heating engineers can help you choose the right replacement boiler for your home. Get an online quote from us for a new boiler that delivers optimum efficiency and reduces your energy bills.
+  At South Coast Plumbing and Heating, we specialise in installing high-quality oil boilers. With years of expertise, we are committed to providing exceptional service to our valued customers across Devon.
 
-         We Service Gas and Oil Boilers in Exeter
-         Regular maintenance is key to ensuring your boiler works safely and efficiently all year round. Our team offers annual boiler servicing for homes across Exeter. During the boiler service, we perform a full inspection, identifying any potential issues before they become costly repairs. Keeping your boiler in top condition can also help to extend its lifespan and maintain your warranty.
+- What Are Oil Boilers?
 
-         Boilers Fixed Professionally in Exeter
-         If your boiler breaks down, you don’t want to be left without heating or hot water for long. We offer fast and reliable boiler repairs throughout Exeter. Our team of Gas Safe engineers is fully equipped to diagnose and fix common boiler issues, such as leaks, no hot water, and non-firing systems. If you’re experiencing boiler problems, contact us for a quick, professional repair service.
+  Oil boilers are reliable and efficient heating solutions for properties not connected to the gas grid. They burn heating oil to provide heat and hot water, making them ideal for rural homes and businesses. Modern oil boilers are designed to be energy-efficient, helping to reduce fuel costs and environmental impact.
+  The lifespan of an oil boiler typically ranges between 15 to 20 years, depending on regular maintenance and servicing. By investing in a high-quality boiler and ensuring it is properly maintained, you can enjoy consistent heating and hot water for many years to come.
 
-         Air Source Heat Pumps
-         Ask our team to give you a quote for a new air source heat pump in Exeter. Renewable energy products are the next generation in heating technology, so ask us about installing it in your home. We are your local renewable energy experts, available to install the best heat pump system to suit your home in Exeter.
+- Ask Us About Fitting your New Oil Boiler
 
-         All Plumbing for Exeter
-         When you need a reliable plumber in Exeter, our team is here to help. We handle all types of plumbing projects, including general plumbing and emergency plumbing. You can count on us for prompt and professional service every time. For new kitchen or bathroom plumbing and 24-hour plumbers, our Exeter plumbers have you covered.
+  We understand that every property is unique, so we offer tailored solutions to meet your heating needs. Whether you’re replacing an old boiler or installing a new one, you can trust us to get the job done efficiently and to the highest standard.
+  Ready to upgrade your heating system? Get in touch with South Coast Plumbing and Heating for a free quote. Let us help you stay warm and comfortable all year round!
 
-         Commercial Boilers & Plumbing Exeter
-         If you need a commercial plumber or heating engineer for your Exeter business, then South Coast Plumbing and Heating is the best team to contact. We install and maintain commercial boilers and hot water systems in Exeter. We also cover commercial plumbing projects.
-         ```
 
-        **Now, rewrite the following service page content to match the format above, strictly follow:**
+---
 
-        ```
-        {state["individual_service_page"]}
-        ```
+#### **Boiler Servicing Funnel Text**
+- Online Booking For Boiler Services
 
-        **Your response must follow the example structure exactly.**
-    """,
-        "service_area_page": f""" Yor task is assigned a refine content of the page {state["service_area_page"]}. I peovide the some example check them and then refine the content.
-Few-Shot Examples
-Here are well-structured examples of service area pages to guide the refinement process:
+  An annual boiler service is essential to keep your boiler running smoothly all year. Regular maintenance is also usually required to maintain warranties and help prevent system breakdowns. Book us, your local boiler and heating team, for your annual boiler service in Exeter, Exmouth, Newton Abbot, Honiton, and Cullompton.
 
-Example 1: Blackburn Area Page
-"Blackburn’s Boiler & Plumbing Experts. We are a plumbing and heating specialist covering Blackburn in Lancashire and the surrounding areas. Our team is available for new boiler installations, repairs, and servicing for all types of heating systems in Blackburn. We also handle a wide range of plumbing services, including emergency plumbing. If you're interested in renewable heating solutions, ask us about installing an air-source heat pump for your home in the Blackburn area."
+- Service Your Boiler Annually
 
-(Continue following the structured sections, ensuring professional, high-quality, and location-specific content.)
+  An annual maintenance check for your boiler is essential. A knowledgeable gas engineer can regularly service your central heating and avoid potential risks like carbon monoxide poisoning, gas leaks, explosions, and fires.
+  Corrosion and boiler faults can be spotted early before they cause a boiler breakdown. Prevention is better than cure, and regular boiler maintenance can help stop costly breakdowns and repairs in the future. Our engineers will point out any weaknesses so you can plan and budget for a repair before it becomes an issue.
 
-Example 2: Bolton Area Page
-"Bolton’s Boiler & Plumbing Experts. Jaws Gas Services is your trusted plumbing and heating specialist serving Bolton and the surrounding areas. Our skilled team provides new boiler installations, repairs, and servicing for all types of heating systems in Bolton. We also offer a comprehensive range of plumbing services, including 24/7 emergency plumbing support. If you're exploring renewable heating options, ask us about installing an air-source heat pump in your Bolton home."
+- Keep Your Boiler Warranty Valid
 
-(Continue following the structured sections, refining language, and ensuring clarity and engagement.)
+  To keep your boiler warranty valid, annual servicing must be completed by a qualified engineer. Our team is qualified and approved to service gas and oil boilers - you can trust us for all your heating solutions. Don’t lose out - keep your manufacturer’s warranty up to date by calling us for a service every 12 months.
 
-Important Notes:
-✅ Each service area must have its own dedicated page with content related only to that location.
-✅ Maintain structure, clarity, and a professional yet engaging tone.
-✅ Use headings and bullet points for improved readability.
-✅ Ensure consistency across all service area pages.
-        """
+---
+#### **Boiler Repairs Funnel Text**
+
+- No Heating Or Hot Water?
+  Our skilled gas engineers are equipped with the expertise and tools to diagnose and fix boiler, heating and hot water problems. With our prompt and reliable service, you can trust us to get your system up and running in no time. Broken down boilers are fixed properly, and often in a single visit when you use our local heating services.
+
+- Broken Down Boilers Fixed
+
+  A broken boiler can be a major inconvenience in your daily life, but at South Coast Plumbing and Heating in Exeter, we’re here to help. Our team of skilled gas engineers is equipped to handle any boiler repair, big or small.
+  We understand the importance of fast boiler repair services, so we work quickly to diagnose and correct the problems. With our fast and efficient services, you'll have your boiler up and running in no time.
+
+- Boiler Stopped Working? We Can Help!
+
+  Our team has years of experience repairing central heating and boilers, and we have seen most of the problems that occur.
+  -       Boiler leaks
+  -       No heating
+  -       Cold radiators
+  -       No hot water
+  -       Low gas pressure
+  -       Broken controls
+  -       Timer not working
+  -       Non-firing boiler
+  -       Boiler fault codes
+
+  These are all common faults that we repair immediately, but if you have other issues with your boiler, don’t hesitate to call us. We repair boilers in Exeter, Exmouth, Newton Abbot, Cullompton and Honiton.
+---
+#### **Example 2:
+New Boiler Page**
+- A New Boiler At A Great Price
+
+  Oil boilers are designed to be robust and durable. Often, they can last for up to 15 years, or even longer if they are well maintained. However, there will come a point in every oil boiler’s life when it stops functioning as it should and therefore needs to be replaced.
+  If your gas boiler is more than 12 years old or no longer works reliably, it’s probably time to consider replacing it with a new model. Our dedicated team of fully certified experts are on hand to assist you. We can install a new, energy-efficient, cost-effective boiler for your home for a fixed-rate.
+  We are happy to help with your boiler installation throughout the entire process, from choosing a new boiler to fitting everything you need. Our simple three-step consultation process ensures that we can answer your queries and provide a fixed-rate quote conveniently.
+- Oil To Gas Conversion
+
+  Get rid of your oil boiler and convert to gas central heating - we are available to complete the conversion in the Belfast area. There are many advantages to converting from oil to gas, one of main advantages is having instant hot water when changing to a gas-combi boiler system. Here are a few other advantages:
+    - No need for an oil tank; we will remove it
+    - Your inefficient oil boiler will be replaced by an energy-efficient gas model
+    - Stored water is no longer required, so we remove the hot water cylinder
+    - Your cold water storage tank is also no longer needed; you gain valuable space
+    - Have complete control over your heating system with optional smart controls
+    - Monthly energy bills will be lower
+    - Oil leaks and oil theft are no longer a risk
+
+- What to Expect From an Oil to Gas Conversion
+
+  With over 17 years’ experience in oil to gas conversions, our engineers have a wealth of experience to meet any challenges that might arise when completing the conversion.
+  Most oil to gas conversions take around two days (we don’t like to rush).This is adequate time to ensure that the job is completed to the highest possible standard. Our experience and attention to detail is why Reid Energy Solutions has earned a first-rate reputation.
+---
+#### **Boiler Servicing Page**
+- Maintain your Boiler With Annual Servicing
+
+  Our annual boiler service will help keep your boiler working efficiently all year round. Your boiler is in good hands when you book us to maintain your hot water and heating system. Our team of engineers service boilers in Belfast and the surrounding areas. Make sure your heating is safe, efficient and reliable by choosing us to service your boiler.
+
+- Why Servicing Your Boiler is Essential
+
+  Booking an annual service for your boiler keeps your home and loved ones safe. Potential risks like carbon monoxide poisoning, oil or gas leaks and fires can be avoided when a knowledgeable heating engineer regularly checks your central heating. We all rely on our heating systems to keep supplying warmth and hot water every day, so a maintenance check every 12 months is essential.
+  Reduce the chance of needing an emergency callout in the winter. With a boiler service every 12 months, corrosion and potential faults can be spotted early before they cause a boiler breakdown. Our engineers will point out any weaknesses so you can plan and budget for a repair before they become an issue.
+
+- Keep Your Boiler Warranty Valid
+
+  New boilers come with a manufacturer’s warranty, but to keep it valid, annual servicing must be completed by a qualified engineer. The team at Reid Energy is qualified and approved for oil and gas boiler servicing - you can trust us for all your heating solutions. At the end of the service appointment, our engineers provide documentation as proof should you need it for your warranty.
+  Don’t let things lapse by putting off the maintenance check; you can book your boiler service online! The price is fixed with no hidden surprises, and we will arrive as scheduled to maintain your boiler properly while providing peace of mind. We service boilers in Belfast, Comber, Killinchy, Newtownards and Lisburn.
+---
+#### **Boiler Repairs Page**
+- Brokendown Boiler Repairs
+
+  Is your heating not working? Our expert boiler repair service is here to quickly and effectively resolve any issues with your heating or hot water system. We offer boiler repairs in the Belfast, Comber, Killinchy, Newtownards and Lisburn areas.
+  Our skilled oil and gas engineers are equipped with the knowledge and tools to diagnose and fix heating and hot water problems. With our prompt and reliable service, you can trust us to get your boiler up and running in no time.
+
+- No Hot Water? We Can Help!
+
+  The team at Reid Energy Solutions has years of experience repairing heating and boilers and has seen most of the problems that occur.
+  -       Boiler leaks
+  -       Cold radiators
+  -       No water
+  -       Low gas pressure
+  -       Broken controls
+  -       The timer not working
+  -       Non-firing boiler
+
+  These are all common faults that we repair straight away, but if you have other issues with your boiler, don’t hesitate to call us.
+
+- Boilers Fixed Quickly
+  We are confident we can get your boiler working properly again in no time. Our team is happy to fix boilers and has repaired combi, system and regular boilers with a variety of issues. We start by checking your boiler and heating carefully before identifying the fault. Once we have pinpointed the problem, we can let you know the cost of repairs and get to work quickly.
+  Boilers sometimes develop faults that mean they aren’t working properly. Modern boilers often display a fault code, but if you’re not sure what to do next, we can rectify the issues and leave you with a boiler that runs properly again.
+
+---
+
+### **Now Rewrite and Refine the Following Service Page Content to Match the Structure Above**
+- **Ensure each subservice has an appropriate heading**
+- **Write in paragraphs, not bullet points**
+- **Each subservice should follow a distinct structure, avoiding generic formatting**
+
+#### **Content to Refine**
+{state["individual_service_page"].content}
+
+---
+
+### **Pattern Checking and Content Validation**
+**After rewriting the content, verify that**
+
+1. **Each subservice has a distinct heading** clearly indicating the topic
+2. **It follows a paragraph format** with smooth transitions between sections
+3. **The structure varies appropriately** based on the closest relevant example
+4. **There are no bullet points, lists, or repetitive templates**—everything is in natural, professional paragraphs
+5. **The content remains engaging, SEO-optimized, and aligned with business website standards**
+6. ** The content shown on a paragraph only shown those content which has two to three word so this content shown in a bullet point**
+
+If the structure does not match the provided examples, **revise and refine it accordingly** to ensure **each subservice has its own unique format** while maintaining high-quality, professional writing.
+""",
+
+"service_area_page": f"""
+Your task is to refine the content of the service area page for {state["service_area_page"].content}.
+Use the provided example to ensure **consistency in structure, clarity, and professional tone** while making each service area unique.
+
+**⚠️ IMPORTANT:**
+👉 **DO NOT include any introduction, explanation, or summary before the refined content.**
+👉 Start directly with the refined service area pages.
+👉 **Each service area must have unique headings** while maintaining the same subservices.
+👉 **Headings must NOT contain any punctuation (e.g., no commas, periods, or exclamation marks).**
+
+### **Few-Shot Example:**
+#### **Example: Service Areas with the Same Subservices but Unique Headings**
+
+✅ **Exeter**
+- **Heating Solutions for Exeter Homes**
+  Whether you need a **new boiler, central heating installation, power flushing service, or boiler repair**, our **Gas Safe engineers** ensure your home stays warm and comfortable. **South Coast Plumbing and Heating** provides a **full range of heating services** in Exeter, covering **Natural Gas and oil boilers**.
+
+- **Energy Efficient Boiler Installation Exeter**
+  Looking for an **energy-efficient boiler upgrade** in Exeter? We **supply and install A-rated gas and oil boilers** from leading manufacturers. Our skilled heating engineers help you choose the **best replacement boiler** for your home. **Get an online quote** today for a high-performance boiler that reduces energy costs.
+
+- **Reliable Boiler Servicing Exeter Homes**
+  Routine maintenance is key to keeping your boiler in **top condition**. Our team provides **annual servicing** across Exeter, ensuring safety, efficiency, and early detection of any issues. **Regular servicing** extends your boiler’s lifespan and helps maintain your warranty.
+
+---
+
+✅ **Exmouth**
+- **Trusted Heating Experts Exmouth**
+  If you’re in Exmouth and need a **new boiler, central heating installation, power flushing, or boiler repair**, our **Gas Safe engineers** are ready to assist. **South Coast Plumbing and Heating** serves Exmouth, offering **expert heating solutions** for both **Natural Gas and oil boilers**.
+
+- **High Performance Boiler Installation Exmouth**
+  Planning to **upgrade to an A-rated boiler** in Exmouth? We install **high-efficiency boilers** from trusted manufacturers. Our specialists guide you in selecting the **perfect boiler** for your home, ensuring **maximum energy savings**. **Request an online quote** today.
+
+- **Annual Boiler Checkups Exmouth**
+  Keep your boiler running **safely and efficiently** with our **annual servicing** in Exmouth. Our team conducts a **detailed inspection** to prevent costly repairs and extend your boiler’s lifespan. Book your **boiler service in Exmouth** today.
+
+### **Guidelines for Refinement:**
+🔹 **Follow the Format:** Each service area should have structured sections like the example, including a location-based heading, service highlights, and a clear description.
+🔹 **Unique Headings for Each Service Area:** Ensure **headings are different** for each location while keeping subservices the same. **Avoid using the same title structure across all locations.**
+🔹 **No Punctuation in Headings:** Headings **must not contain any punctuation** (e.g., no commas, periods, or exclamation marks).
+🔹 **Consistency with Readability:** Maintain **bullet points, concise descriptions, and proper formatting** for clarity.
+🔹 **Location-Specific Details:** Make sure each section sounds **tailored to the specific area** while keeping **the core service offerings consistent**.
+
+🚀 **Final Output Format:**
+✅ No unnecessary introduction or explanation
+✅ Starts directly with the **first service area**
+✅ Uses **unique headings without punctuation**
+✅ Ensures **professional, structured, and readable content**
+"""
 
     }
-    pages = {key: llm.invoke(prompt) for key, prompt in prompts.items()}
+    pages = {key: llm.invoke(prompt).content.strip() for key, prompt in prompts.items()}
     state.update(pages)
     print("refine_done")
     return state
 
-
 def evaluate_content_quality(state: ContentState) -> ContentState:
     """Evaluates content quality, ensuring fair scoring that reflects real improvements."""
-
-
     previous_score = state.get("quality_score", None)  # Get previous score if available
   # Get previous score if available
 
@@ -645,9 +788,7 @@ def evaluate_content_quality(state: ContentState) -> ContentState:
     - **DO NOT suggest changes unrelated to the provided content.** No hallucinations about missing videos, testimonials, or interactive elements.
     - **All feedback must be content-based, fact-driven, and specific.**
     - **You MUST provide at least 5 unique, real improvement areas**—no generic feedback.
-
     ---
-
     ### **Evaluation Criteria (Be Critical, But Only on Real Issues)**
     1. **Readability & Flow** – Does the content read smoothly and professionally?
     2. **Logical Structure & Clarity** – Is the content well-structured with clear headings and transitions?
@@ -655,7 +796,7 @@ def evaluate_content_quality(state: ContentState) -> ContentState:
     4. **SEO Optimization** – Are keywords well-integrated and formatting SEO-friendly?
     5. **Accuracy & Credibility** – Are all claims factually correct, with no vague statements?
     6. **Persuasiveness & CTA Strength** – Are the calls to action compelling?
-    7. **Grammar, Spelling & Language Precision** – Any typos or awkward phrasing?
+    7. **Spelling & Language Precision** – Any typos or awkward phrasing?
 
     ---
 
@@ -693,6 +834,7 @@ def evaluate_content_quality(state: ContentState) -> ContentState:
 
     **If the score does NOT increase, explicitly state why.**
     """
+
     response = llm.invoke(prompt)
     output = response.content
 
@@ -746,43 +888,41 @@ def feedback_improvement(state: ContentState) -> ContentState:
     # Adjusted prompts for refining content
     prompts = {
         "refine_home_page_content": f"""
-        You are a **senior UK-based content strategist and conversion copywriter**. Your mission is to **completely refine and enhance** the given Home Page Content so that it **achieves a significantly higher quality score**.
+        You are a **senior UK-based content strategist and conversion copywriter**. Your mission is to **aggressively refine and enhance** the given content to ensure a **significant quality score improvement**.
 
         ### **🚀 Your Objectives:**
         ✅ **Fix ALL Issues Highlighted in the Feedback Below**
-        ✅ **Upgrade Readability, Persuasiveness, and Professionalism**
-        ✅ **Increase the Quality Score (Currently: {previous_score})**
-        ✅ **Enhance Structure & Engagement**
-        ✅ **Strengthen CTAs & Conversion Elements**
+        ✅ **Improve Structure, Readability, and Persuasiveness**
+        ✅ **Ensure SEO Optimization & Conversion-Focused Writing**
+        ✅ **Increase the Quality Score (Currently: {previous_score})** 
 
         ### **🔍 Issues in the Previous Version (MUST BE FIXED):**
         {feedback}
 
-        ### **📜 Previous Home Page Content (Rewrite & Improve):**
+        ### **📜 Previous Version (Rewrite & Improve):**
         {previous_home_page}
 
-        **🚀 Your rewrite must be a clear, measurable improvement over the previous version.**
-        Instruction: Do NOT include any explanations, commentary, any code, HTML tags, or introductions.
+        **🚀 Your rewrite must be a measurable improvement over the previous version.**
+        **🚫 DO NOT include explanations, commentary, HTML tags, or code.**
         """,
 
         "refine_about_us_content": f"""
-        You are a **senior UK-based content strategist and brand storyteller**. Your mission is to **completely refine and enhance** the About Us page so it **authentically represents the company's values and credibility**.
+        You are a **senior UK-based content strategist and conversion copywriter**. Your mission is to **aggressively refine and enhance** the given content to ensure a **significant quality score improvement**.
 
         ### **🚀 Your Objectives:**
         ✅ **Fix ALL Issues Highlighted in the Feedback Below**
-        ✅ **Enhance Brand Storytelling & Authenticity**
-        ✅ **Ensure a Compelling and Trustworthy Narrative**
-        ✅ **Improve Readability, Flow, and Engagement**
-        ✅ **Increase the Quality Score (Currently: {previous_score})**
+        ✅ **Improve Structure, Readability, and Persuasiveness**
+        ✅ **Ensure SEO Optimization & Conversion-Focused Writing**
+        ✅ **Increase the Quality Score (Currently: {previous_score})** 
 
         ### **🔍 Issues in the Previous Version (MUST BE FIXED):**
         {feedback}
 
-        ### **📜 Previous About Us Page Content (Rewrite & Improve):**
+        ### **📜 Previous Version (Rewrite & Improve):**
         {previous_about_us}
 
-        **🚀 Your rewrite must be a clear, measurable improvement over the previous version.**
-        Instruction: Do NOT include any explanations, commentary, any code, HTML tags, or introductions.
+        **🚀 Your rewrite must be a measurable improvement over the previous version.**
+        **🚫 DO NOT include explanations, commentary, HTML tags, or code.**
         """,
 
         "refine_service_page_content": f"""
@@ -806,45 +946,44 @@ def feedback_improvement(state: ContentState) -> ContentState:
         """,
 
         "refine_individual_service_page_content": f"""
-        You are a **senior UK-based service page specialist and conversion copywriter**. Your mission is to **refine and enhance** this Individual Service Page so that it **clearly communicates value and drives conversions**.
+        You are a **senior UK-based content strategist and conversion copywriter**. Your mission is to **aggressively refine and enhance** the given content to ensure a **significant quality score improvement**.
 
         ### **🚀 Your Objectives:**
         ✅ **Fix ALL Issues Highlighted in the Feedback Below**
-        ✅ **Clarify Service Benefits and Unique Selling Points**
-        ✅ **Enhance Readability, Trustworthiness, and Persuasion**
-        ✅ **Increase the Quality Score (Currently: {previous_score})**
-        ✅ **Optimize for SEO and Engagement**
+        ✅ **Improve Structure, Readability, and Persuasiveness**
+        ✅ **Ensure SEO Optimization & Conversion-Focused Writing**
+        ✅ **Increase the Quality Score (Currently: {previous_score})** 
 
         ### **🔍 Issues in the Previous Version (MUST BE FIXED):**
         {feedback}
 
-        ### **📜 Previous Individual Service Page Content (Rewrite & Improve):**
+        ### **📜 Previous Version (Rewrite & Improve):**
         {previous_individual_service_page}
 
-        **🚀 Your rewrite must be a clear, measurable improvement over the previous version.**
-        Instruction: Do NOT include any explanations, commentary, any code, HTML tags, or introductions.
+        **🚀 Your rewrite must be a measurable improvement over the previous version.**
+        **🚫 DO NOT include explanations, commentary, HTML tags, or code.**
         """,
 
-        "refine_service_area_page_content": f"""
-        You are a **senior UK-based content strategist and local SEO specialist**. Your mission is to **completely refine and enhance** the Service Area Page Content so that it **attracts and converts local customers effectively**.
+        "refine_service_area_page_content":f"""
+        You are a **senior UK-based content strategist and conversion copywriter**. Your mission is to **aggressively refine and enhance** the given content to ensure a **significant quality score improvement**.
 
         ### **🚀 Your Objectives:**
         ✅ **Fix ALL Issues Highlighted in the Feedback Below**
-        ✅ **Make Location-Specific Content More Engaging**
-        ✅ **Ensure Clear and Persuasive Messaging**
-        ✅ **Improve SEO Optimization for Local Search**
-        ✅ **Increase the Quality Score (Currently: {previous_score})**
+        ✅ **Improve Structure, Readability, and Persuasiveness**
+        ✅ **Ensure SEO Optimization & Conversion-Focused Writing**
+        ✅ **Increase the Quality Score (Currently: {previous_score})** 
 
         ### **🔍 Issues in the Previous Version (MUST BE FIXED):**
         {feedback}
 
-        ### **📜 Previous Service Area Page Content (Rewrite & Improve):**
+        ### **📜 Previous Version (Rewrite & Improve):**
         {previous_service_area_page}
 
-        **🚀 Your rewrite must be a clear, measurable improvement over the previous version.**
-        Instruction: Do NOT include any explanations, commentary, any code, HTML tags, or introductions.
+        **🚀 Your rewrite must be a measurable improvement over the previous version.**
+        **🚫 DO NOT include explanations, commentary, HTML tags, or code.**
         """
     }
+
     # Invoke LLM for refinement on all pages
     refined_pages = {key: llm.invoke(prompt).content.strip() for key, prompt in prompts.items()}
 
@@ -858,6 +997,8 @@ def feedback_improvement(state: ContentState) -> ContentState:
     })
 
     return state
+
+
 def create_content_workflow():
     
     workflow =  StateGraph(ContentState)

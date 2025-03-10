@@ -22,14 +22,6 @@ st.subheader("Service Areas")
 service_areas = st.text_area("Enter service areas (comma-separated)", "London, Manchester, Birmingham")
 service_areas_list = [area.strip() for area in service_areas.split(",") if area.strip()]
 
-st.subheader("Service Area Services")
-service_area_services = {}
-for area in service_areas_list:
-    service_area_services[area] = {}
-    for service in services.keys():
-        sub_services_area = st.text_area(f"{area} - Sub-services for {service} (comma-separated)", key=f"{area}_{service}")
-        service_area_services[area][service] = [s.strip() for s in sub_services_area.split(",") if s.strip()]
-
 # Initialize session state for content storage
 if "content" not in st.session_state:
     st.session_state["content"] = {}
@@ -45,7 +37,6 @@ if st.button("Generate Content"):
         "company_name": company_name,
         "services": services,
         "service_area": service_areas_list,
-        "service_area_services": service_area_services
     }
 
     try:
