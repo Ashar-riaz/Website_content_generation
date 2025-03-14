@@ -29,7 +29,11 @@ if "content" not in st.session_state:
 if "history" not in st.session_state:
     st.session_state["history"] = {}
 
+import streamlit as st
 
+file_path = st.file_uploader(
+    "Choose a Docs file", accept_multiple_files=False, type=["docx", "pdf"]
+)
 # Generate Content
 if st.button("Generate Content"):
     payload = {
@@ -37,6 +41,7 @@ if st.button("Generate Content"):
         "company_name": company_name,
         "services": services,
         "service_area": service_areas_list,
+        "file_path": file_path
     }
 
     try:

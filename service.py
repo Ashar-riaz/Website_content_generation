@@ -6,8 +6,9 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_community.tools import DuckDuckGoSearchRun
 from langgraph.graph import StateGraph
 from typing import Dict, List
+from docx import Document
 # ✅ Set Google Gemini API Key
-os.environ["GOOGLE_API_KEY"] = "AIzaSyA6ks9hQCb29yaaEBs2XQXrPK86vrMhhG8"
+os.environ["GOOGLE_API_KEY"] = "AIzaSyCxfUhnGGmVjWy1PZJIpjv3hfBDkSDcWJA"
 # ✅ Initialize Google Gemini Model
 llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
 # ✅ Define Search Tool
@@ -28,8 +29,10 @@ class ContentState(Dict):
     quality_score: int
     feedback: str
     content: str
-    service_area_services: Dict[str, Dict[str, List[str]]]  # Each area has multiple sub-service pages
-
+    data: str
+    text:str
+    meeting_point:str
+    file_path:str
 
 # ✅ Define Workflow
 workflow = StateGraph(ContentState)
@@ -93,7 +96,7 @@ def content_writing_task(state: ContentState) -> ContentState:
               - Mention any **freebies or added-value services** (e.g., “Free Smart Thermostat with Every Boiler Installation”).
 
               #### **6. **Why Choose Us?** (Unique Selling Points)
-              - Emphasize what sets the company apart (e.g., 24/7 availability, warranties, financing options and add other which give plus).
+              - Emphasize what sets the company apart (e.g., 24/7 availability, warranties, financing options, and add other which give plus points).
               - Reinforce a **customer-first approach**, focusing on transparency, trust, and superior service.
 
               #### **7. Call to Action (Drives Conversions):**
@@ -111,60 +114,84 @@ def content_writing_task(state: ContentState) -> ContentState:
               - Ensure the content is adaptable to any location unless specified.
               - If a location is provided, highlight **local expertise** and availability.
 
+              #### **10. Insights from Client Meeting (Ensures Accuracy & Alignment):**
+              - Incorporate key takeaways from the client meeting.
+              - Use the following extracted insights to align the website content with client expectations:
+                {state["meeting_point"]}
+
               **Use the following research data for accuracy:**
               {research_data}
 
               **Apply these SEO best practices:**
               {seo_data}
 
-              Ensure the content is persuasive, engaging, and easy to read. Keep paragraphs short and **use bullet points for clarity when needed**. Your writing should feel **professional yet approachable**, with a strong focus on **conversion and engagement**.
-              please not provide a code and html tag and not add a colon in the center of the sentence.
+              Ensure the content is UK based, use UK keywords, persuasive, engaging, and easy to read. Keep paragraphs short and **use bullet points for clarity when needed**. Your writing should feel **professional yet approachable**, with a strong focus on **conversion and engagement**.
+              Please do not provide code or HTML tags and avoid using colons in the middle of sentences.
               """,
- "about_us_page": f"""You are an expert web content writer skilled in crafting **engaging, structured, and customer-focused About Us pages**.
-                Write a professional and compelling **About Us** page for **{company_name}**, a trusted provider of **{services}**. The content must be well-structured, engaging, and clearly communicate the company’s mission, services, and coverage areas.
+ "about_us_page": f"""You are an expert web content writer skilled in crafting **engaging, structured, and customer-focused About Us pages**.  
+                Write a professional and compelling **About Us** page for **{company_name}**, a trusted provider of **{services}**. The content must be well-structured, engaging, and clearly communicate the company’s mission, services, and coverage areas.  
 
-                ### **Key Requirements:**
+                ### **Key Requirements:**  
 
-                #### **1. Introduction (Who We Are & What We Do)**
-                - Start with a strong, engaging introduction that:
-                  - Establishes expertise and credibility.
-                  - Mentions **years of experience, location, and key services**.
-                  - Highlights the company’s commitment to **quality, customer satisfaction, and professional service**.
-                  - Give in a detailed information about the company.
+                #### **1. Introduction (Who We Are & What We Do)**  
+                - Start with a strong, engaging introduction that:  
+                  - Establishes expertise and credibility.  
+                  - Mentions **years of experience, location, and key services**.  
+                  - Highlights the company’s commitment to **quality, customer satisfaction, and professional service**.  
+                  - Provide **detailed company information** to build trust and authority.  
 
-                #### **2. Our Mission & Values**
-                - Describe the company’s **core values and commitment**:
-                  - Integrity, professionalism, and high-quality service.
-                  - Dedication to customer-first service and long-term client relationships.
+                #### **2. Our Mission & Values**  
+                - Describe the company’s **core values and commitment**:  
+                  - Integrity, professionalism, and high-quality service.  
+                  - Dedication to customer-first service and long-term client relationships.  
 
-                #### **3. Service Overview (With Subservices in Bullet Points)**
-                - Display only **the services exactly as provided in `{services_list}`**, without modifying or adding extra services.
-                - Ensure subservices **stay in their original format** without splitting words.
-                - Example structure:
+                #### **3. Service Overview (With Subservices in Bullet Points)**  
+                - Display only **the services exactly as provided in `{services_list}`**, without modifying or adding extra services.  
+                - Ensure subservices **stay in their original format** without splitting words.  
+                - Example structure:  
 
-                {services_list}
-                #### **4. Areas We Serve (Exact Format & Integrity Preserved)**
-                - Display only **the locations exactly as provided in `{service_area}`**.
-                - Ensure locations with **multiple words remain intact** (e.g., "Newton Abbot" will not split).
-                - Display in a **clean bullet-point list**.
+                {services_list}  
 
-                {service_area}
+                #### **4. Areas We Serve (Exact Format & Integrity Preserved)**  
+                - Display only **the locations exactly as provided in `{service_area}`**.  
+                - Ensure locations with **multiple words remain intact** (e.g., "Newton Abbot" will not split).  
+                - Display in a **clean bullet-point list**.  
 
-                #### **5. Call to Action (Encouraging Customer Engagement)**
-                - End with a **clear and compelling CTA**, such as:
-                - **"For expert services in {service_area}, contact us today!"**
-                - **"Get in touch to schedule your consultation."**
+                {service_area}  
 
-                ### **Page Structure:**
-                1. **About {company_name}** (Introduction)
-                2. **Our Mission & Values** (Commitment to quality and customer satisfaction)
-                3. **Our Services** (List services dynamically from `{services_list}`)
-                4. **Areas We Cover** (List locations dynamically from `{service_area}`)
-                5. **Contact Us** (Call to Action)
+                #### **5. Insights from Client Meeting (Ensures Accuracy & Alignment)**  
+                - Use the following extracted insights from the client meeting to align the content with their expectations:  
+                  {state["meeting_point"]}  
 
-                Ensure the content is **concise, well-structured, and SEO-friendly**, using **bullet points** for readability and **natural keyword integration** for better search rankings.
-                please not provide a code and html tag.
+                #### **6. SEO Optimization (Improves Search Visibility)**  
+                - Naturally integrate **SEO best practices** to improve online visibility.  
+                - Use **high-ranking keywords** while ensuring natural readability.  
+                - Maintain a **clear and structured format** to enhance search rankings.  
+                - Include a **compelling meta description** (max 160 characters) for better click-through rates.  
+
+                #### **7. Research-Based Accuracy**  
+                - Ensure the content is aligned with industry standards and trends.  
+                - Use the following research data to enhance credibility:  
+                  {research_data}  
+
+                #### **8. Call to Action (Encouraging Customer Engagement)**  
+                - End with a **clear and compelling CTA**, such as:  
+                  - **"For expert services in {service_area}, contact us today!"**  
+                  - **"Get in touch to schedule your consultation."**  
+
+                ### **Page Structure:**  
+                1. **About {company_name}** (Introduction)  
+                2. **Our Mission & Values** (Commitment to quality and customer satisfaction)  
+                3. **Our Services** (List services dynamically from `{services_list}`)  
+                4. **Areas We Cover** (List locations dynamically from `{service_area}`)  
+                5. **Client Insights** (Incorporate `{state["meeting_point"]}` for alignment)  
+                6. **SEO & Research** (Ensure factual accuracy and search visibility)  
+                7. **Contact Us** (Call to Action)  
+
+                Ensure the content is **concise, well-structured, and SEO-friendly**, using **bullet points** for readability and **natural keyword integration** for better search rankings.  
+                Please do not provide code or HTML tags.  
                 """,
+
 
     "service_page": f"""You are a professional web content strategist and expert copywriter.
               Create a **well-structured, engaging, and customer-focused service page** for {company_name}.
@@ -219,16 +246,20 @@ def content_writing_task(state: ContentState) -> ContentState:
               - Provide a **clear, step-by-step breakdown** of how the service is delivered.
               - Keep it **simple, engaging, and informative**.
 
-              #### **4. Call to Action (CTA)**
+              #### **4. Insights from Client Meeting (Ensures Accuracy & Alignment)**
+              - Incorporate key takeaways from the client meeting to align service descriptions with customer expectations:
+                {state["meeting_point"]}
+
+              #### **5. Call to Action (CTA)**
               - End with a **strong, persuasive CTA**, such as:
                 - **"Contact us today for a free consultation!"**
                 - **"Book your service now and enjoy hassle-free solar solutions."**
 
-              #### **5. SEO Optimization & Readability**
+              #### **6. SEO Optimization & Readability**
               - Ensure content is **SEO-optimized** for better search rankings.
               - Use **concise paragraphs, bullet points, and subheadings** for easy reading.
 
-              #### **6. Adaptability**
+              #### **7. Adaptability**
               - **Do not mention specific locations unless required.**
               - **Use this research:** {research_data}
               - **Apply these SEO best practices:** {seo_data}
@@ -238,6 +269,7 @@ def content_writing_task(state: ContentState) -> ContentState:
               ---
               Please do not provide code or HTML tags.
               """,
+
 
     "individual_service_page": f"""
                 Each service listed below must have its **own dedicated page** with content that is **specific to that subservice**. **Ensure that a response is generated for every subservice** without skipping any.
@@ -249,56 +281,70 @@ def content_writing_task(state: ContentState) -> ContentState:
             - The content must be **unique for each subservice** and **not generic**.
             - Maintain a **consistent format** and ensure high-quality, structured writing.
             - The output must include **every subservice in the input list**.
+            - **Use SEO best practices** and relevant keywords for better search rankings.
 
-            ---
+            ---  
 
-            🔹 **For each subservice in `{services_list}`, use the following structure:**
+            🔹 **For each subservice in `{services_list}`, use the following structure:**  
 
-            ---
+            ---  
 
-            ### **[Subservice Name]**
+            ### **[Subservice Name]**  
 
-            #### **Trusted [Subservice Name] Experts**
-            - Provide a compelling introduction emphasizing expertise and trustworthiness.
-            - Mention the experience and commitment to customer satisfaction.
+            #### **Trusted [Subservice Name] Experts**  
+            - Provide a compelling introduction emphasizing expertise and trustworthiness.  
+            - Mention the experience and commitment to customer satisfaction.  
 
-            #### **What is [Subservice Name]?**
-            - Define `[Subservice Name]` clearly and concisely.
-            - Explain how it works and why it is beneficial.
-            - Ensure the explanation is **exclusive to this subservice**.
+            #### **What is [Subservice Name]?**  
+            - Define `[Subservice Name]` clearly and concisely.  
+            - Explain how it works and why it is beneficial.  
+            - Ensure the explanation is **exclusive to this subservice**.  
 
-            #### **Why Choose Our [Subservice Name] Services?**
-            - List reasons why customers should trust your services.
-            - Highlight experience, qualifications, and customer-centric approach.
-            - Use **bullet points** for clarity.
+            #### **Why Choose Our [Subservice Name] Services?**  
+            - List reasons why customers should trust your services.  
+            - Highlight experience, qualifications, and customer-centric approach.  
+            - Use **bullet points** for clarity.  
 
-            #### **Key Benefits of [Subservice Name]**
-            - List the main benefits of this specific service.
-            - Explain how customers will benefit from choosing this service.
-            - Use **bullet points** for clarity.
+            #### **Key Benefits of [Subservice Name]**  
+            - List the main benefits of this specific service.  
+            - Explain how customers will benefit from choosing this service.  
+            - Use **bullet points** for clarity.  
 
-            #### **Signs You Need [Subservice Name] (if applicable)**
-            - Provide a list of signs that indicate when this service is needed.
-            - Keep it **directly relevant** to this service.
+            #### **Signs You Need [Subservice Name] (if applicable)**  
+            - Provide a list of signs that indicate when this service is needed.  
+            - Keep it **directly relevant** to this service.  
 
-            #### **How Our [Subservice Name] Process Works**
-            - Describe the process step by step in an easy-to-understand manner.
-            - Ensure clarity and professionalism.
+            #### **How Our [Subservice Name] Process Works**  
+            - Describe the process step by step in an easy-to-understand manner.  
+            - Ensure clarity and professionalism.  
 
-            #### **Call to Action**
-            - End with a strong **Call to Action (CTA)**, encouraging visitors to **book, contact, or request a quote**.
-            - Include a **phone number, email, or link** for immediate action.
+            #### **Insights from Client Meeting (Ensures Accuracy & Alignment)**  
+            - Incorporate key takeaways from the client meeting to align content with expectations:  
+              {state["meeting_point"]}  
 
-            ---
+            #### **SEO Optimization & Research-Based Accuracy**  
+            - Integrate **high-ranking keywords** naturally for SEO optimization.  
+            - Ensure content is structured for **readability and engagement**.  
+            - Use the following research data to enhance credibility:  
+              {research_data}  
+            - Apply these **SEO best practices** for better visibility:  
+              {seo_data}  
 
-            **📌 Final Reminder:**
-            ✅ **Generate content for every subservice** listed in `{services_list}`.
-            ✅ Do **not** generate only one or a few subservices; all must be included.
-            ✅ Keep responses **structured, engaging, and informative**.
-            ✅ Maintain a **professional yet persuasive** tone.
-            ✅ Ensure **SEO-friendly** and **human-like writing**.
-            ✅ Do **not** include any code or HTML tags.
+            #### **Call to Action**  
+            - End with a strong **Call to Action (CTA)**, encouraging visitors to **book, contact, or request a quote**.  
+            - Include a **phone number, email, or link** for immediate action.  
+
+            ---  
+
+            **📌 Final Reminder:**  
+            ✅ **Generate content for every subservice** listed in `{services_list}`.  
+            ✅ Do **not** generate only one or a few subservices; all must be included.  
+            ✅ Keep responses **structured, engaging, and informative**.  
+            ✅ Maintain a **professional yet persuasive** tone.  
+            ✅ Ensure **SEO-friendly** and **human-like writing**.  
+            ✅ Do **not** include any code or HTML tags.  
             """,
+
 
 "service_area_page": f"""
                     Generate a detailed and engaging service area page for {service_area}.
@@ -309,16 +355,39 @@ def content_writing_task(state: ContentState) -> ContentState:
                     {service_area}
 
                     ### [Unique, keyword-rich heading including the service name and {service_area}]
-                    Write a compelling introduction about this service, explaining its importance and benefits for customers in {service_area}. Highlight key features and how it addresses specific needs.
+                    - Write a compelling introduction about this service, explaining its importance and benefits for customers in {service_area}. 
+                    - Highlight key features and how it addresses specific needs.  
 
-                    Provide additional details, such as the expertise of the team, service quality, and any guarantees. Ensure the content is informative, specific, and valuable to the reader.
+                    - Provide additional details, such as:
+                      - The expertise of the team.
+                      - Service quality and any guarantees.
+                      - Unique aspects of this service in {service_area} (e.g., compliance with local regulations, availability, or exclusive offers).  
 
-                    Mention any unique aspects of this service in {service_area}, such as compliance with local regulations, availability, or exclusive offers.
+                    - Ensure the content is **informative, specific, and valuable to the reader**.  
+                    - Maintain a **natural variation in wording** while keeping the format consistent across all services.  
+                    - Each service description should be in paragraph form, with the **service name as the heading** followed by the description.  
+                    - Ensure all services are displayed in full.  
 
-                    Maintain a natural variation in wording while keeping the format consistent across all services. Each service description should be in paragraph form, with the service name as the heading followed by the description.
+                    ### **Insights from Client Meeting (Ensures Accuracy & Alignment)**  
+                    - Incorporate key takeaways from the client meeting to align the content with expectations:  
+                      {state["meeting_point"]}  
 
-                    Ensure all services are displayed in full.
-                    """
+                    ### **SEO Optimization & Research-Based Accuracy**  
+                    - Naturally integrate **high-ranking keywords** for SEO optimization.  
+                    - Ensure content is structured for **readability and engagement**.  
+                    - Use the following research data to enhance credibility:  
+                      {research_data}  
+                    - Apply these **SEO best practices** for better search rankings:  
+                      {seo_data}  
+
+                    **Final Requirements:**  
+                    ✅ Ensure content is **location-specific** to {service_area}.  
+                    ✅ Keep the tone **professional, engaging, and informative**.  
+                    ✅ Do **not** use generic descriptions—each service must be unique.  
+                    ✅ Maintain **SEO-friendly** and **human-like writing**.  
+                    ✅ Do **not** include any code or HTML tags.  
+                    """,
+
 }
     pages = {key: llm.invoke(prompt) for key, prompt in prompts.items()}
     state.update(pages)
@@ -888,100 +957,142 @@ def feedback_improvement(state: ContentState) -> ContentState:
     # Adjusted prompts for refining content
     prompts = {
         "refine_home_page_content": f"""
-        You are a **senior UK-based content strategist and conversion copywriter**. Your mission is to **aggressively refine and enhance** the given content to ensure a **significant quality score improvement**.
+You are a **senior UK-based content strategist and conversion copywriter**. Your task is to **significantly enhance the quality of the given content** by addressing every issue mentioned in the feedback. Your goal is to **maximize the quality score (Currently: {previous_score})**.
 
-        ### **🚀 Your Objectives:**
-        ✅ **Fix ALL Issues Highlighted in the Feedback Below**
-        ✅ **Improve Structure, Readability, and Persuasiveness**
-        ✅ **Ensure SEO Optimization & Conversion-Focused Writing**
-        ✅ **Increase the Quality Score (Currently: {previous_score})** 
+### **🚀 Critical Directives (Must Follow)**
+✅ **Aggressively fix ALL Issues Highlighted in Feedback (No Exceptions)**
+✅ **Enhance Structure, Readability, and Persuasiveness with Concrete Improvements**
+✅ **Ensure High SEO Optimization & Conversion-Driven Writing**
+✅ **Use More Engaging, Clear, and Action-Oriented Language**
+✅ **Ensure the new version is drastically better than the previous one**
 
-        ### **🔍 Issues in the Previous Version (MUST BE FIXED):**
-        {feedback}
+### **❌ Common Mistakes to Avoid**
+🚫 **DO NOT return content that is too similar to the original**  
+🚫 **DO NOT simply rephrase—fully transform weak sections**  
+🚫 **DO NOT ignore any issues in feedback**  
+🚫 **DO NOT include explanations, commentary, HTML tags, or code**
 
-        ### **📜 Previous Version (Rewrite & Improve):**
-        {previous_home_page}
+---
 
-        **🚀 Your rewrite must be a measurable improvement over the previous version.**
-        **🚫 DO NOT include explanations, commentary, HTML tags, or code.**
-        """,
+### **🔍 Issues in the Previous Version (MUST BE FIXED):**
+{feedback}
 
-        "refine_about_us_content": f"""
-        You are a **senior UK-based content strategist and conversion copywriter**. Your mission is to **aggressively refine and enhance** the given content to ensure a **significant quality score improvement**.
+### **📜 Previous Version (Revise & Improve):**
+{previous_home_page}
 
-        ### **🚀 Your Objectives:**
-        ✅ **Fix ALL Issues Highlighted in the Feedback Below**
-        ✅ **Improve Structure, Readability, and Persuasiveness**
-        ✅ **Ensure SEO Optimization & Conversion-Focused Writing**
-        ✅ **Increase the Quality Score (Currently: {previous_score})** 
+🔹 **Your rewrite must show a noticeable, measurable improvement over the previous version. If it does not, the quality score will remain the same.**
+""",
 
-        ### **🔍 Issues in the Previous Version (MUST BE FIXED):**
-        {feedback}
+"refine_about_us_content": f"""
+You are a **senior UK-based content strategist and conversion copywriter**. Your mission is to **aggressively refine and enhance** the About Us content to make it **more engaging, trustworthy, and conversion-driven**.
 
-        ### **📜 Previous Version (Rewrite & Improve):**
-        {previous_about_us}
+### **🚀 Mandatory Improvements**
+✅ **Fully Address Every Issue Highlighted in the Feedback**  
+✅ **Strengthen Brand Storytelling & Emotional Appeal**  
+✅ **Improve Readability, Flow, and Clarity**  
+✅ **Ensure SEO Optimization & Persuasive Copywriting**  
+✅ **Significantly Increase the Quality Score (Currently: {previous_score})**
 
-        **🚀 Your rewrite must be a measurable improvement over the previous version.**
-        **🚫 DO NOT include explanations, commentary, HTML tags, or code.**
-        """,
+### **❌ Avoid These Mistakes**
+🚫 **Do NOT return content that is too similar to the original**  
+🚫 **Do NOT just rephrase—fully transform weak sections**  
+🚫 **Do NOT ignore any feedback points**  
+🚫 **Do NOT include explanations, commentary, HTML tags, or code**  
+
+---
+
+### **🔍 Issues in the Previous Version (MUST BE FIXED):**
+{feedback}
+
+### **📜 Previous Version (Rewrite & Improve):**
+{previous_about_us}
+
+🔹 **Your rewrite must demonstrate a measurable improvement. If it does not, the quality score will remain the same.**
+""",
+
 
         "refine_service_page_content": f"""
-        You are a **senior UK-based content strategist and SEO specialist**. Your mission is to **completely refine and enhance** the Service Page Content to make it **highly engaging, clear, and optimized for conversions**.
+You are a **senior UK-based content strategist and SEO specialist**. Your mission is to **completely refine and optimize** the Service Page content to make it **highly engaging, persuasive, and conversion-focused**.
 
-        ### **🚀 Your Objectives:**
-        ✅ **Fix ALL Issues Highlighted in the Feedback Below**
-        ✅ **Improve Service Descriptions & Benefits**
-        ✅ **Enhance Readability, Clarity, and SEO Optimization**
-        ✅ **Increase the Quality Score (Currently: {previous_score})**
-        ✅ **Strengthen CTAs & User Engagement**
+### **🚀 Critical Directives (Must Follow)**
+✅ **Fix ALL Issues Highlighted in the Feedback Below (No Exceptions)**  
+✅ **Make Service Descriptions More Engaging & Benefit-Driven**  
+✅ **Improve Readability, Clarity, and SEO Optimization**  
+✅ **Strengthen CTAs & User Engagement**  
+✅ **Increase the Quality Score (Currently: {previous_score})**  
 
-        ### **🔍 Issues in the Previous Version (MUST BE FIXED):**
-        {feedback}
+### **❌ Common Mistakes to Avoid**
+🚫 **DO NOT return a slightly modified version—Make Drastic Improvements**  
+🚫 **DO NOT just rephrase—fully transform weak sections**  
+🚫 **DO NOT ignore any feedback points**  
+🚫 **DO NOT include explanations, commentary, HTML tags, or code**  
 
-        ### **📜 Previous Service Page Content (Rewrite & Improve):**
-        {previous_service_page}
+---
 
-        **🚀 Your rewrite must be a clear, measurable improvement over the previous version.**
-        Instruction: Do NOT include any explanations, commentary, any code, HTML tags, or introductions.
-        """,
+### **🔍 Issues in the Previous Version (MUST BE FIXED):**
+{feedback}
 
-        "refine_individual_service_page_content": f"""
-        You are a **senior UK-based content strategist and conversion copywriter**. Your mission is to **aggressively refine and enhance** the given content to ensure a **significant quality score improvement**.
+### **📜 Previous Service Page Content (Rewrite & Improve):**
+{previous_service_page}
 
-        ### **🚀 Your Objectives:**
-        ✅ **Fix ALL Issues Highlighted in the Feedback Below**
-        ✅ **Improve Structure, Readability, and Persuasiveness**
-        ✅ **Ensure SEO Optimization & Conversion-Focused Writing**
-        ✅ **Increase the Quality Score (Currently: {previous_score})** 
+🔹 **Your rewrite must demonstrate a measurable improvement. If it does not, the quality score will remain the same.**
+""",
 
-        ### **🔍 Issues in the Previous Version (MUST BE FIXED):**
-        {feedback}
+       "refine_individual_service_page_content": f"""
+You are a **senior UK-based content strategist and SEO specialist**. Your task is to **significantly enhance the quality of the individual service page content** by making it **clear, persuasive, and highly optimized for conversions**.
 
-        ### **📜 Previous Version (Rewrite & Improve):**
-        {previous_individual_service_page}
+### **🚀 Key Objectives**
+✅ **Address Every Issue Highlighted in the Feedback Below**  
+✅ **Improve Service Descriptions for Maximum Clarity & Persuasion**  
+✅ **Enhance Readability, Engagement, and SEO Performance**  
+✅ **Strengthen Call-to-Actions (CTAs) to Drive More Conversions**  
+✅ **Ensure a Noticeable Quality Score Increase (Currently: {previous_score})**  
 
-        **🚀 Your rewrite must be a measurable improvement over the previous version.**
-        **🚫 DO NOT include explanations, commentary, HTML tags, or code.**
-        """,
+### **❌ Strict Guidelines**
+🚫 **DO NOT submit a version that is too similar to the original**  
+🚫 **DO NOT just rephrase—fully transform weak sections**  
+🚫 **DO NOT ignore any feedback points**  
+🚫 **DO NOT include explanations, commentary, HTML tags, or code**  
 
-        "refine_service_area_page_content":f"""
-        You are a **senior UK-based content strategist and conversion copywriter**. Your mission is to **aggressively refine and enhance** the given content to ensure a **significant quality score improvement**.
+---
 
-        ### **🚀 Your Objectives:**
-        ✅ **Fix ALL Issues Highlighted in the Feedback Below**
-        ✅ **Improve Structure, Readability, and Persuasiveness**
-        ✅ **Ensure SEO Optimization & Conversion-Focused Writing**
-        ✅ **Increase the Quality Score (Currently: {previous_score})** 
+### **🔍 Issues in the Previous Version (MUST BE FIXED):**
+{feedback}
 
-        ### **🔍 Issues in the Previous Version (MUST BE FIXED):**
-        {feedback}
+### **📜 Previous Individual Service Page Content (Rewrite & Improve):**
+{previous_individual_service_page}
 
-        ### **📜 Previous Version (Rewrite & Improve):**
-        {previous_service_area_page}
+🔹 **Your rewrite must demonstrate a measurable improvement. If it does not, the quality score will remain the same.**
+""",
 
-        **🚀 Your rewrite must be a measurable improvement over the previous version.**
-        **🚫 DO NOT include explanations, commentary, HTML tags, or code.**
-        """
+
+       "refine_service_area_page_content": f"""
+You are a **senior UK-based content strategist and SEO specialist**. Your job is to **significantly enhance the quality of the service area page content**, ensuring it is **engaging, location-optimized, and highly persuasive**.
+
+### **🚀 Must-Have Improvements**
+✅ **Fix ALL Issues Highlighted in the Feedback Below**  
+✅ **Enhance Structure, Readability, and Persuasiveness**  
+✅ **Improve Location-Specific Optimization for SEO**  
+✅ **Strengthen CTAs & User Engagement**  
+✅ **Ensure a Noticeable Quality Score Increase (Currently: {previous_score})**  
+
+### **❌ Strict Rules**
+🚫 **DO NOT submit a version that is too similar to the original**  
+🚫 **DO NOT just rephrase—fully transform weak sections**  
+🚫 **DO NOT ignore any feedback points**  
+🚫 **DO NOT include explanations, commentary, HTML tags, or code**  
+
+---
+
+### **🔍 Issues in the Previous Version (MUST BE FIXED):**
+{feedback}
+
+### **📜 Previous Service Area Page Content (Rewrite & Improve):**
+{previous_service_area_page}
+
+🔹 **Your rewrite must demonstrate a measurable improvement. If it does not, the quality score will remain the same.**
+""",
+
     }
 
     # Invoke LLM for refinement on all pages
@@ -998,38 +1109,47 @@ def feedback_improvement(state: ContentState) -> ContentState:
 
     return state
 
+def upload_file(state: ContentState) -> ContentState:
+  file_path= state["file_path"]
+  print(file_path)
+# Load the document
+  doc = Document(file_path)
 
-def create_content_workflow():
-    
-    workflow =  StateGraph(ContentState)
+  # Read and print the content
+  text = "\n".join([para.text for para in doc.paragraphs])
+  print("upload done")
+  return {"text": text}
 
-    # ✅ Define Nodes
-    workflow.add_node("research_step", research_task)
-    workflow.add_node("seo_step", seo_optimization_task)
-    workflow.add_node("writing_step", content_writing_task)
-    workflow.add_node("refine_content", refine_content)
-    workflow.add_node("evaluate_content_quality", evaluate_content_quality)
-    workflow.add_node("feedback_improvement", feedback_improvement)  # New Node
+def meeting_insights(state: ContentState) -> ContentState:
+  data=state["text"]
+  prompt = f"""
+### Role:
+You are an expert **Website Content Analyst** specializing in extracting relevant information from meeting transcripts. Your job is to analyze the provided transcript, identify key discussions about website content, and present only the most useful insights.
 
-    # ✅ Define Transitions
-    workflow.set_entry_point("research_step")
-    workflow.add_edge("research_step", "seo_step")
-    workflow.add_edge("seo_step", "writing_step")
-    workflow.add_edge("writing_step", "refine_content")
-    workflow.add_edge("refine_content", "evaluate_content_quality")
+### Task:
+Process the transcript and extract essential details **directly contributing to website content creation**, while ignoring unrelated discussions, small talk, and general meeting logistics.
 
-    # Conditional Flow for Quality Check
-    workflow.add_conditional_edges(
-        "evaluate_content_quality",
-        lambda state: "feedback_improvement" if state["quality_score"] <= 2 else END,
-        {
-            "feedback_improvement": "feedback_improvement",
-            END: END
-        }
-    )
+### Responsibilities:
+1. **Understand Website Goals** – Identify the client's main objectives and purpose for the website.
+2. **Define Site Structure** – Extract discussed pages, sections, and overall navigation flow.
+3. **Summarize Content Strategy** – Capture insights about content types (text, images, blogs, videos, FAQs).
+4. **Extract Branding & Design Preferences** – Note colors, typography, branding elements, and overall visual style.
+5. **Identify Functional & Interactive Elements** – List features like forms, integrations, buttons, and CTAs.
+6. **Analyze Target Audience & Messaging** – Understand the audience and tone/style of communication.
 
-    # ✅ Add Loopback from feedback_improvement to refine_content
-    workflow.add_edge("feedback_improvement", "evaluate_content_quality")
-    compile = workflow.compile() 
-    # ✅ Compile the Graph
-    return compile
+### Guidelines:
+- Strictly **filter out** unrelated discussions, filler words, or non-essential details.
+- Focus on **clear, actionable insights** for content development.
+- Present the extracted information in a structured, professional format.
+
+### Input Transcript:
+{data}
+
+### Optimized Output:
+Provide a structured summary with only the **necessary insights** that contribute to website content creation.
+"""
+
+  response = llm.invoke(prompt)
+  meeting_point = response.content
+  print("insights done",meeting_point)
+  return {"meeting_point": meeting_point}
