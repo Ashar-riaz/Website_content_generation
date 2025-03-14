@@ -8,7 +8,7 @@ from langgraph.graph import StateGraph
 from typing import Dict, List
 from docx import Document
 # ✅ Set Google Gemini API Key
-os.environ["GOOGLE_API_KEY"] = "AIzaSyCxfUhnGGmVjWy1PZJIpjv3hfBDkSDcWJA"
+os.environ["GOOGLE_API_KEY"] = "GOOGLE_API_KEY"
 # ✅ Initialize Google Gemini Model
 llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
 # ✅ Define Search Tool
