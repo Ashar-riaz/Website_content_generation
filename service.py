@@ -8,7 +8,7 @@ from langgraph.graph import StateGraph
 from typing import Dict, List
 from docx import Document
 # ✅ Set Google Gemini API Key
-os.environ["GOOGLE_API_KEY"] = "GOOGLE_API_KEY"
+os.environ["GOOGLE_API_KEY"] = "AIzaSyCxfUhnGGmVjWy1PZJIpjv3hfBDkSDcWJA"
 # ✅ Initialize Google Gemini Model
 llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
 # ✅ Define Search Tool
@@ -479,7 +479,8 @@ def refine_content(state: ContentState) -> ContentState:
         ✅  Do NOT modify punctuation or add extra symbols. Maintain the original punctuation exactly as provided.
         ✅  Do NOT add colon in the center of the sentence.
 
-        Return the improved home page content in a **fully structured, highly detailed, and polished format** suitable for a professional UK service business website.""",
+        Return the improved home page content in a **fully structured, highly detailed, and polished format** suitable for a professional UK service business website.
+         Not give any code and html tags.""",
 
        "about_us_page": f""" You are an expert UK-based content writer specializing in home services. Your task is to refine the following **About Us Page Content** for a heating and plumbing company to match the structure, style, and detail level of top-tier UK service websites. The content should be well-organized, informative, and highly professional.
         ---
@@ -542,7 +543,8 @@ def refine_content(state: ContentState) -> ContentState:
         ✅ **Make it SEO-Friendly:** Integrate **relevant UK-based keywords** naturally into the content to improve SEO ranking without sacrificing readability.
         ✅ **Include Location Details & Coverage Areas:** Clearly specify the regions served, emphasizing the **local expertise** of the business.
 
-        Return the improved **About Us Page** content in a **fully structured, highly detailed, and polished format** suitable for a professional UK service business website.""",
+        Return the improved **About Us Page** content in a **fully structured, highly detailed, and polished format** suitable for a professional UK service business website.
+         Not give any code and html tags.""",
 
 
 
@@ -783,6 +785,7 @@ New Boiler Page**
 6. ** The content shown on a paragraph only shown those content which has two to three word so this content shown in a bullet point**
 
 If the structure does not match the provided examples, **revise and refine it accordingly** to ensure **each subservice has its own unique format** while maintaining high-quality, professional writing.
+ Not give any code and html tags.
 """,
 
 "service_area_page": f"""
@@ -832,6 +835,7 @@ Use the provided example to ensure **consistency in structure, clarity, and prof
 ✅ Starts directly with the **first service area**
 ✅ Uses **unique headings without punctuation**
 ✅ Ensures **professional, structured, and readable content**
+ Not give any code and html tags.
 """
 
     }
@@ -980,7 +984,7 @@ You are a **senior UK-based content strategist and conversion copywriter**. Your
 ### **📜 Previous Version (Revise & Improve):**
 {previous_home_page}
 
-🔹 **Your rewrite must show a noticeable, measurable improvement over the previous version. If it does not, the quality score will remain the same.**
+🔹 **Your rewrite must show a noticeable, measurable improvement over the previous version. If it does not, the quality score will remain the same. Not give any code and html tags.**
 """,
 
 "refine_about_us_content": f"""
@@ -1007,7 +1011,7 @@ You are a **senior UK-based content strategist and conversion copywriter**. Your
 ### **📜 Previous Version (Rewrite & Improve):**
 {previous_about_us}
 
-🔹 **Your rewrite must demonstrate a measurable improvement. If it does not, the quality score will remain the same.**
+🔹 **Your rewrite must demonstrate a measurable improvement. If it does not, the quality score will remain the same. Not give any code and html tags.**
 """,
 
 
@@ -1035,7 +1039,7 @@ You are a **senior UK-based content strategist and SEO specialist**. Your missio
 ### **📜 Previous Service Page Content (Rewrite & Improve):**
 {previous_service_page}
 
-🔹 **Your rewrite must demonstrate a measurable improvement. If it does not, the quality score will remain the same.**
+🔹 **Your rewrite must demonstrate a measurable improvement. If it does not, the quality score will remain the same. Not give any code and html tags.**
 """,
 
        "refine_individual_service_page_content": f"""
@@ -1062,7 +1066,7 @@ You are a **senior UK-based content strategist and SEO specialist**. Your task i
 ### **📜 Previous Individual Service Page Content (Rewrite & Improve):**
 {previous_individual_service_page}
 
-🔹 **Your rewrite must demonstrate a measurable improvement. If it does not, the quality score will remain the same.**
+🔹 **Your rewrite must demonstrate a measurable improvement. If it does not, the quality score will remain the same. Not give any code and html tags.**
 """,
 
 
@@ -1090,7 +1094,7 @@ You are a **senior UK-based content strategist and SEO specialist**. Your job is
 ### **📜 Previous Service Area Page Content (Rewrite & Improve):**
 {previous_service_area_page}
 
-🔹 **Your rewrite must demonstrate a measurable improvement. If it does not, the quality score will remain the same.**
+🔹 **Your rewrite must demonstrate a measurable improvement. If it does not, the quality score will remain the same. Not give any code and html tags.**
 """,
 
     }

@@ -103,21 +103,24 @@ def update_page(state: dict, user_query: str):
     current_content = state.get("page_content", "")
 
     # Define the prompt for updating the content
-    prompt = f"""You are an expert content editor. Modify the content according to this exact request: {user_query}. 
-
-    - If the request asks to remove specific text, completely delete it while keeping the content natural and professional.
-    - If the request involves replacing text, swap it exactly as instructed.
-    - If the request requires rewording, refine the text while keeping the meaning intact.
-    - Do not add explanations, comments, formatting hints, or additional modifications—only return the updated version of the content.
-    - Ensure that only the requested changes are made. Do not include the previous version or additional variations.
+    prompt = f"""
+    You are a professional content editor. Modify the content strictly according to the user request below.
     
-    Here is the content before modification:
-    ---
-    {current_content}
-    ---
+    ### **Rules for Modification**  
+    - Apply the requested changes **EXACTLY as specified** in the user request.  
+    - **Return the entire content** with only the requested modifications applied.  
+    - **DO NOT return only the changed section**—always return the full content with modifications integrated.  
+    - **DO NOT rephrase or modify anything that is not explicitly requested to change.**  
+    - Ensure the modified content reads naturally and maintains professional quality.  
+    - **DO NOT include explanations, formatting hints, or extra commentary—only return the final updated content.**  
 
-    Return only the fully updated content without any extra details.
-    and update only the content that needs to be changed and shown with all content.
+    ### **User Request:**  
+    {user_query}
+
+    ### **Original Content:**  
+    {current_content}
+
+    ### **Updated Content (Return Full Updated Version Below):**
     """
 
     # Call Gemini to process the update
