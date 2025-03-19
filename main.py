@@ -6,6 +6,7 @@ from typing import Dict, List, Any
 from langgraph.graph import StateGraph
 from service import research_task, seo_optimization_task, content_writing_task, refine_content, evaluate_content_quality, feedback_improvement, meeting_insights, upload_file
 from langchain_google_genai import ChatGoogleGenerativeAI
+from service import system_prompt
 app = FastAPI()
 llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
 class ContentState(Dict):
@@ -52,7 +53,7 @@ workflow.add_edge("refine_content", "evaluate_content_quality")
 # Conditional Flow for Quality Check & Human Review
 workflow.add_conditional_edges(
     "evaluate_content_quality",
-    lambda state: "feedback_improvement" if state["quality_score"] <= 8 else "human_review",
+    lambda state: "feedback_improvement" if state["quality_score"] <= 7 else "human_review",
     {
         "feedback_improvement": "feedback_improvement",
         "human_review": "human_review"
@@ -74,7 +75,8 @@ class RequestModel(BaseModel):
     service_area: List[str]
 class UpdateRequest(BaseModel):
     page_key: List[str]
-    user_query: str   
+    user_query: str  
+
 def generate_content(data):  # Remove @app.post to make it an importable function
     state = content_graph.invoke({
         "idea": data["idea"],
@@ -82,7 +84,7 @@ def generate_content(data):  # Remove @app.post to make it an importable functio
         "services": data["services"],
         "service_area": data["service_area"],
         "quality_score": 0,
-        "file_path": data["file_path"]
+        "file_path": "./New Microsoft Word Document.docx"
     })
 
     response = {
@@ -94,6 +96,17 @@ def generate_content(data):  # Remove @app.post to make it an importable functio
     }
     
     return response  # Return dictionary instead of JSONResponse
+@app.post("/generate-content/")
+def generate_content_endpoint(request: RequestModel):
+    """
+    API endpoint to generate website content based on user input.
+    """
+    data = request.dict()
+
+    response = generate_content(data)
+
+    return JSONResponse(content=response)
+
 
 @app.put("/update-page/")
 def update_page(state: dict, user_query: str):
@@ -124,7 +137,10 @@ def update_page(state: dict, user_query: str):
     """
 
     # Call Gemini to process the update
-    updated_content = llm.invoke(prompt).content.strip()
+    updated_content = llm.invoke([
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": prompt}
+    ]).content.strip()
 
     # Ensure the modified content is updated correctly
     return {"page_content": updated_content}

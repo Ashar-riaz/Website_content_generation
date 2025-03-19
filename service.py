@@ -8,7 +8,7 @@ from langgraph.graph import StateGraph
 from typing import Dict, List
 from docx import Document
 # ✅ Set Google Gemini API Key
-os.environ["GOOGLE_API_KEY"] = "GOOGLE_API_KEY"
+os.environ["GOOGLE_API_KEY"] = "AIzaSyAExa1yC6Y0LtTbCTJKa64CT8f8I1roqR0"
 # ✅ Initialize Google Gemini Model
 llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
 # ✅ Define Search Tool
@@ -36,7 +36,28 @@ class ContentState(Dict):
 
 # ✅ Define Workflow
 workflow = StateGraph(ContentState)
+system_prompt= f"""
+    You are an expert content writer specialising in creating professional, informative and customer-focused content for service-based businesses in the UK Your writing should be clear engaging and persuasive while maintaining a warm and trustworthy tone Use UK spelling grammar and a tone that resonates with a UK audience Avoid excessive punctuation only use it where necessary for clarity
 
+When writing
+1 Use a friendly but authoritative tone emphasising expertise and reliability
+2 Keep sentences short and direct avoiding overly technical language unless necessary
+3 Highlight key selling points clearly using bullet points or structured paragraphs to improve readability
+4 Maintain a customer-focused perspective reassuring the reader and addressing potential concerns proactively
+5 Ensure the content flows logically starting with broad information before diving into specifics
+6 Use persuasive language to encourage action while avoiding aggressive sales tactics
+
+Example Output
+Trust Our Expert Heating Engineers in Exeter
+Our Gas Safe registered engineers have over 40 years of experience in boiler installations servicing and repairs We specialise in fitting A rated energy efficient boilers from leading brands If you need a new boiler or a fast repair we’re here to help
+
+🔹 Fast and Reliable Service – We aim for same day repairs and next day boiler installations
+🔹 Free Smart Thermostat – Get a smart thermostat included with every new boiler installation
+🔹 7 Day Availability – We work around your schedule offering flexible appointments
+
+For expert heating and plumbing services in Exeter Exmouth Teignmouth and beyond contact us today
+
+"""
 # ✅ Research Task
 def research_task(state: ContentState) -> ContentState:
     research_query  = f"{state['idea']}-{state['company_name']} - {state['services']}"
@@ -49,6 +70,7 @@ def seo_optimization_task(state: ContentState) -> ContentState:
     prompt = f"Optimize the following research for SEO: {state['research_data']}"
     seo_optimization = llm.invoke(prompt)
     state.update({"seo_optimization": seo_optimization})
+    print("seo_done",seo_optimization)
     return state
 
 # ✅ Content Writing Task (Generates Home, About Us, and Service Pages)
@@ -389,7 +411,7 @@ def content_writing_task(state: ContentState) -> ContentState:
                     """,
 
 }
-    pages = {key: llm.invoke(prompt) for key, prompt in prompts.items()}
+    pages = {key: llm.invoke([{"role": "system", "content": system_prompt}, {"role": "user", "content": prompt}]) for key, prompt in prompts.items()}
     state.update(pages)
     print("content_done")
     return state
@@ -839,7 +861,13 @@ Use the provided example to ensure **consistency in structure, clarity, and prof
 """
 
     }
-    pages = {key: llm.invoke(prompt).content.strip() for key, prompt in prompts.items()}
+    pages = {
+        key: llm.invoke([
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt}
+        ]).content.strip()
+        for key, prompt in prompts.items()
+    }
     state.update(pages)
     print("refine_done")
     return state
@@ -1100,8 +1128,13 @@ You are a **senior UK-based content strategist and SEO specialist**. Your job is
     }
 
     # Invoke LLM for refinement on all pages
-    refined_pages = {key: llm.invoke(prompt).content.strip() for key, prompt in prompts.items()}
-
+    refined_pages = {
+    key: llm.invoke([
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": prompt}
+    ]).content.strip()
+    for key, prompt in prompts.items()
+    }
     # Update state with refined content
     state.update({
         "home_page": refined_pages["refine_home_page_content"],
