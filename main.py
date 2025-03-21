@@ -1,6 +1,7 @@
 from langgraph.graph import END
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import Dict, List, Any
 from langgraph.graph import StateGraph
@@ -8,6 +9,14 @@ from service import research_task, seo_optimization_task, content_writing_task, 
 from langchain_google_genai import ChatGoogleGenerativeAI
 from service import system_prompt
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Change this to specific origins if needed
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Allow all headers
+)
+
 llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
 class ContentState(Dict):
     idea: str
