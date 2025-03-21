@@ -7,8 +7,11 @@ from langchain_community.tools import DuckDuckGoSearchRun
 from langgraph.graph import StateGraph
 from typing import Dict, List
 from docx import Document
+from fastapi import UploadFile
+import shutil
+from streamlit.runtime.uploaded_file_manager import UploadedFile  
 # ✅ Set Google Gemini API Key
-os.environ["GOOGLE_API_KEY"] = "AIzaSyAExa1yC6Y0LtTbCTJKa64CT8f8I1roqR0"
+os.environ["GOOGLE_API_KEY"] = ""
 # ✅ Initialize Google Gemini Model
 llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash")
 # ✅ Define Search Tool
@@ -356,17 +359,17 @@ Write a **concise, natural-sounding About Us page** for **{company_name}**, a tr
             ✅ Ensure **SEO-friendly** and **human-like writing**.
             ✅ Do **not** include any code or HTML tags.
             """,
-"service_area_page": f"""
+"service_area_page": f"""You are an expert web content writer skilled in crafting **clear, engaging, and customer-focused Service Area pages**.  
                     Generate a detailed and engaging service area page for {service_area}.
-
                     For each service in {services_list}, follow this structured format:
 
                     ---
                     {service_area}
 
-                    ### [Unique, keyword-rich heading including the service name and {service_area}]
+                    ### [Unique, keyword-rich heading including the service name {service_area} and area {service_area}]
                     - Write a compelling introduction about this service, explaining its importance and benefits for customers in {service_area}.
                     - Highlight key features and how it addresses specific needs.
+                    - Give in a paragraph form not a bullet and other form.
 
                     - Provide additional details, such as:
                       - The expertise of the team.
@@ -1145,17 +1148,41 @@ You are a **senior UK-based content strategist and SEO specialist**. Your job is
     })
 
     return state
-
 def upload_file(state: ContentState) -> ContentState:
-  file_path= state["file_path"]
-  print(file_path)
-# Load the document
-  doc = Document(file_path)
+    uploaded_file = state["file_path"]  # Extract uploaded file
 
-  # Read and print the content
-  text = "\n".join([para.text for para in doc.paragraphs])
-  print("upload done")
-  return {"text": text}
+    # Ensure 'meeting_file' folder exists
+    folder_path = "meeting_file"
+    os.makedirs(folder_path, exist_ok=True)
+
+    # Always use the same filename to overwrite previous files
+    new_file_path = os.path.join(folder_path, "uploaded_document")  
+
+    # Check if the uploaded file is from Streamlit
+    if isinstance(uploaded_file, UploadedFile):
+        # Get file extension
+        _, file_extension = os.path.splitext(uploaded_file.name)  
+        new_file_path += file_extension  # Maintain original file type (.txt or .docx)
+
+        # Save the file (overwrite previous file)
+        with open(new_file_path, "wb") as buffer:
+            buffer.write(uploaded_file.read())
+
+    else:
+        raise ValueError(f"Unsupported file type: {type(uploaded_file)}")
+
+    # Read the file content
+    if new_file_path.endswith(".txt"):  # Handling text files
+        with open(new_file_path, "r", encoding="utf-8") as file:
+            text = file.read()
+    elif new_file_path.endswith(".docx"):  # Handling Word documents
+        doc = Document(new_file_path)
+        text = "\n".join([para.text for para in doc.paragraphs])
+    else:
+        raise ValueError("Unsupported file format. Only .txt and .docx are allowed.")
+
+    print("Upload done. File saved as:", new_file_path)
+    return {"text": text}
 
 def meeting_insights(state: ContentState) -> ContentState:
   data=state["text"]

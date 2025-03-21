@@ -93,7 +93,7 @@ def generate_content(data):  # Remove @app.post to make it an importable functio
         "services": data["services"],
         "service_area": data["service_area"],
         "quality_score": 0,
-        "file_path": "./New Microsoft Word Document.docx"
+        "file_path": data["file_path"]
     })
 
     response = {
